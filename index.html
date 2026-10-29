@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CekDulu · Latihan memeriksa pesan sebelum klik</title>
+  <meta name="description" content="Latihan interaktif mengenali pesan penipuan. Semua contoh fiktif, tanpa login, tanpa data yang dikirim.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">CekDulu</a>
+    <span id="xp"></span>
+  </header>
+
+  <main class="page">
+    <noscript><p>Aktifkan JavaScript untuk memakai CekDulu.</p></noscript>
+    <div id="coach"></div>
+    <div id="units"></div>
+
+    <section class="recap" aria-labelledby="recap-title">
+      <h2 id="recap-title">5 Pertanyaan Sebelum Klik</h2>
+      <p>Semua pelajaran melatih lima pertanyaan ini.</p>
+      <ol id="recap-list"></ol>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <p>Semua pesan, nama, nomor, dan alamat di sini fiktif. Progresmu hanya disimpan di perangkat ini dan tidak dikirim ke mana pun.</p>
+    <p id="storage-note" hidden>Browser ini tidak mengizinkan penyimpanan, jadi progres tidak akan tersimpan.</p>
+    <button type="button" class="link-btn" id="reset">Hapus progres</button>
+  </footer>
+
+  <script src="js/questions.js"></script>
+  <script src="js/scenarios.js"></script>
+  <script src="js/logic.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/path.js"></script>
+</body>
+</html>

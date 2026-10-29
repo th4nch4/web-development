@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pelajaran · CekDulu</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="lesson-page">
+  <header class="lesson-top">
+    <a class="icon-btn" href="index.html" aria-label="Keluar dari pelajaran">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </a>
+    <div class="progress" id="progress" role="progressbar" aria-label="Kemajuan pelajaran" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span></span></div>
+  </header>
+
+  <main class="lesson-main" id="lesson">
+    <noscript><p>Aktifkan JavaScript untuk memakai CekDulu.</p></noscript>
+    <div class="coach-slot" id="coach"></div>
+    <div class="phone-col">
+      <p class="context" id="context" hidden></p>
+      <div id="phone-slot"></div>
+    </div>
+    <div class="inspect-slot" id="inspect" aria-live="polite"></div>
+    <div class="task-slot" id="task"></div>
+  </main>
+
+  <footer class="lesson-footer" id="footer">
+    <div class="footer-inner">
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+      <button type="button" class="btn" id="primary" disabled>Lanjut</button>
+    </div>
+  </footer>
+
+  <script src="js/questions.js"></script>
+  <script src="js/scenarios.js"></script>
+  <script src="js/logic.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/phone.js"></script>
+  <script src="js/engine.js"></script>
+</body>
+</html>
