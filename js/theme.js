@@ -55,7 +55,11 @@ const CekTheme = (() => {
     const current = stored();
     panel.innerHTML = `<fieldset><legend>Tampilan</legend><div class="answers">${CHOICES.map((c) => `
       <label class="answer"><input type="radio" name="theme" value="${c.value}"${c.value === current ? " checked" : ""}><span>${c.label}</span></label>`).join("")}
-    </div></fieldset><p class="settings-note">Sistem mengikuti pengaturan terang/gelap perangkatmu.</p>`;
+    </div></fieldset><p class="settings-note">Sistem ikut pengaturan terang/gelap HP-mu.</p>
+    <fieldset class="settings-sound"><legend>Suara</legend><div class="answers answers-2">
+      <label class="answer"><input type="radio" name="sound" value="on"${CekSound.isOn() ? " checked" : ""}><span>Nyala</span></label>
+      <label class="answer"><input type="radio" name="sound" value="off"${CekSound.isOn() ? "" : " checked"}><span>Mati</span></label>
+    </div></fieldset>`;
 
     const close = () => {
       panel.hidden = true;
@@ -66,7 +70,14 @@ const CekTheme = (() => {
       panel.hidden = !panel.hidden;
       button.setAttribute("aria-expanded", String(!panel.hidden));
     });
-    panel.addEventListener("change", (event) => choose(event.target.value));
+    panel.addEventListener("change", (event) => {
+      if (event.target.name === "sound") {
+        CekSound.setOn(event.target.value === "on");
+        CekSound.play("tap");
+      } else {
+        choose(event.target.value);
+      }
+    });
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !panel.hidden) {
         close();

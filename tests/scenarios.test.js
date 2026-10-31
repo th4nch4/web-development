@@ -2,7 +2,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const QUESTIONS = require("../js/questions.js");
-const { UNITS, SCENARIOS } = require("../js/scenarios.js");
+const { UNITS, SCENARIOS, QUICK_ROUND } = require("../js/scenarios.js");
 
 const QUESTION_IDS = QUESTIONS.map((q) => q.id);
 const APPS = ["chat", "sms", "email", "notif"];
@@ -70,4 +70,53 @@ SCENARIOS.forEach((s) => {
 test("ada pesan palsu dan pesan asli", () => {
   assert.ok(SCENARIOS.some((s) => s.flags.length > 0));
   assert.ok(SCENARIOS.some((s) => s.flags.length === 0));
+});
+
+const STEPS = ["find", "flags", "match", "url", "reply", "action"];
+
+SCENARIOS.forEach((s) => {
+  test(`susunan soal "${s.id}" valid`, () => {
+    const steps = s.steps || ["find", "flags", "action"];
+    steps.forEach((step) => assert.ok(STEPS.includes(step), `jenis soal "${step}" tidak dikenal`));
+    assert.equal(steps[0], "find", "soal pertama harus find");
+    assert.equal(steps[steps.length - 1], "action", "soal terakhir harus action");
+    assert.ok(steps.includes("flags") || steps.includes("match"), "butuh flags atau match");
+    if (steps.includes("match")) assert.ok(s.flags.length >= 2, "match butuh minimal 2 flags");
+    if (steps.includes("url")) {
+      assert.ok(s.linkQuiz && s.linkQuiz.question && s.linkQuiz.why, "url butuh linkQuiz lengkap");
+      assert.equal(s.linkQuiz.options.filter((o) => o.correct).length, 1, "linkQuiz harus punya tepat satu jawaban benar");
+    }
+    if (s.lupi) assert.ok(s.lupi.intro && s.lupi.good && s.lupi.bad, "lupi butuh intro, good, dan bad");
+    if (steps.includes("reply")) {
+      assert.ok(s.reply && s.reply.prompt && s.reply.why, "reply butuh prompt dan why");
+      assert.ok(s.reply.words.length >= 3 && s.reply.extra.length >= 1, "reply butuh minimal 3 kata dan 1 pengecoh");
+    }
+  });
+});
+
+test("Ronde Kilat: setiap bagian punya pesan asli dan penipuan", () => {
+  UNITS.forEach((unit) => {
+    const items = QUICK_ROUND.filter((q) => q.unit === unit.id);
+    assert.ok(items.some((q) => q.scam) && items.some((q) => !q.scam), `bagian ${unit.id} butuh campuran asli dan penipuan`);
+    items.forEach((q) => assert.ok(q.sender && q.app && q.text && q.why && typeof q.scam === "boolean", "item Ronde Kilat belum lengkap"));
+  });
+});
+
+const MATERI = require("../js/materi.js");
+
+MATERI.forEach((m) => {
+  test(`materi "${m.id}" lengkap`, () => {
+    assert.match(m.id, /^[a-z0-9-]+$/);
+    assert.ok(m.title && m.steps.length > 0, "materi butuh title dan steps");
+    assert.ok(m.steps.some((step) => step.type === "quiz"), "materi butuh minimal satu kuis");
+    m.steps.forEach((step) => {
+      assert.ok(["quiz", "learn"].includes(step.type), `jenis langkah "${step.type}" tidak dikenal`);
+      if (step.type === "learn") assert.ok(step.title && step.text.length > 0, "kartu learn butuh title dan text");
+      if (step.type === "quiz") {
+        assert.ok(step.question && step.sub, "kuis butuh question dan sub");
+        assert.equal(step.options.filter((o) => o.correct).length, 1, `kuis "${step.question}" harus punya tepat satu jawaban benar`);
+        step.options.forEach((o) => assert.ok(o.text && o.why, "setiap pilihan butuh text dan why"));
+      }
+    });
+  });
 });

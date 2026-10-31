@@ -99,7 +99,7 @@ body {
 
 h1, h2, h3, p { margin: 0; }
 h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.02em; text-wrap: balance; }
-.brand, .node-badge, .stat-value, .situation summary, .contact strong { font-family: var(--font-display); }
+.brand, .node-badge, .stat-value { font-family: var(--font-display); }
 p { text-wrap: pretty; }
 svg { display: block; }
 [hidden] { display: none !important; }
@@ -148,17 +148,7 @@ svg { display: block; }
 .brand { display: inline-flex; align-items: center; min-height: 44px; font-size: 23px; font-weight: 800; letter-spacing: -.04em; color: var(--brand); text-decoration: none; }
 .back-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--muted); text-decoration: none; }
 @media (hover: hover) { .back-link:hover { color: var(--ink); } }
-/* Bantuan di bar atas: selalu bisa dicapai dari setiap halaman (kecuali di tengah pelajaran) */
-.topbar { flex-wrap: wrap; row-gap: 4px; }
-.help-nav { display: flex; gap: 6px; margin-left: auto; }
-.help-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; font-size: 15px; font-weight: 700; color: var(--link); text-decoration: none; white-space: nowrap; border: 2px solid var(--line); border-radius: 99px; }
-@media (hover: hover) { .help-nav a:hover { background: var(--surface); } }
-.help-nav a[aria-current="page"] { color: var(--on-brand); background: var(--brand); border-color: var(--brand); }
-@media (max-width: 479px) {
-  .help-nav { order: 3; flex-basis: 100%; margin-left: 0; }
-  .topbar #xp { margin-left: auto; }
-  .help-nav a { flex: 1; justify-content: center; }
-}
+.topbar #xp { margin-left: auto; }
 .xp-chip { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; color: var(--brand); }
 .xp-chip .icon svg { width: 22px; height: 22px; }
 
@@ -218,6 +208,8 @@ svg { display: block; }
 .settings-panel fieldset { margin: 0; padding: 0; border: 0; }
 .settings-panel legend { margin-bottom: 10px; padding: 0; font-family: var(--font-display); font-size: 18px; font-weight: 800; }
 .settings-note { margin-top: 10px; font-size: 14px; color: var(--muted); }
+.settings-sound { margin-top: 16px !important; }
+.answers.answers-2 { grid-template-columns: repeat(2, 1fr); }
 
 /* ---------- Beranda (index.html) ---------- */
 
@@ -229,6 +221,7 @@ svg { display: block; }
 .unit-2 { --unit: var(--teal); --unit-dark: var(--teal-dark); }
 .unit-banner { padding: 14px 18px; color: var(--on-brand); background: var(--unit); border-radius: 16px; box-shadow: 0 4px 0 var(--unit-dark); }
 .unit-banner h2 { font-size: 21px; line-height: 1.25; }
+.unit-kicker { display: block; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 
 .path { display: flex; flex-direction: column; align-items: center; gap: 26px; margin: 28px 0 0; padding: 0; list-style: none; }
 .path-end { margin-top: 44px; }
@@ -313,13 +306,11 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
   padding: 0 16px 10px;
 }
 .lesson-main.is-done { display: block; }
-.coach-slot { display: none; grid-area: coach; } /* di HP tidak ada ruang; tampil di laptop */
 .phone-col { grid-area: phone; display: flex; flex-direction: column; min-height: 0; }
 #phone-slot { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 #phone-slot .phone { position: absolute; left: 50%; top: 50%; margin: 0; transform: translate(-50%, -50%) scale(var(--fit, 1)); }
-.inspect-slot { grid-area: phone; align-self: start; z-index: 2; } /* di HP: muncul di atas HP, tidak mendorong soal */
 .task-slot { grid-area: task; }
-.inspect-slot:empty, .task-slot:empty { display: none; }
+.task-slot:empty { display: none; }
 
 .context {
   max-width: 340px;
@@ -332,17 +323,10 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
   border-radius: 12px;
 }
 
-/* Kartu hasil periksa: "lensa" Lupi di kiri, fakta di kanan */
-.inspect-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--brand-soft); border: 2px solid var(--brand-soft); border-radius: 14px; animation: rise .2s ease-out; }
-.inspect-lens { flex: none; display: grid; place-items: center; width: 40px; height: 40px; color: var(--on-brand); background: var(--brand); border-radius: 50%; box-shadow: 0 3px 0 var(--brand-dark); }
-.inspect-lens svg { width: 22px; height: 22px; }
-.inspect-card > div { flex: 1; min-width: 0; }
-.inspect-close { margin: -6px -8px 0 0; color: var(--ink); }
-.inspect-close svg { width: 22px; height: 22px; }
-.inspect-kind { display: block; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
-.inspect-label { display: block; margin: 2px 0 4px; word-break: break-all; }
-.inspect-card p { font-size: 16px; color: var(--muted); }
-
+/* Soal: Lupi + gelembung pertanyaan, seperti karakter Duolingo */
+.task-head { align-items: center; margin-bottom: 4px; }
+.task-head .mascot { width: 72px; height: 72px; animation: pop .35s ease-out; }
+.task-head .coach-bubble { font-weight: 800; }
 .task-title { font-size: 23px; line-height: 1.25; }
 .task-title:focus { outline: none; } /* fokus dari kode, bukan dari Tab */
 .task-sub { margin: 4px 0 12px; color: var(--muted); }
@@ -424,6 +408,13 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 .option.is-extra::after { content: "Keliru"; color: var(--bad-dark); }
 .option.is-wrong::after { content: "Kurang tepat"; color: var(--bad-dark); }
 
+/* Setelah dinilai: soal sudah dijawab, jadi judulnya diganti penjelasan yang dipadatkan
+   supaya penjelasan dan HP simulasi muat satu layar. */
+.lesson-main.is-graded .task-head, .lesson-main.is-graded .task-sub { display: none; }
+.options.is-graded .option { padding: 8px 12px; }
+.options.is-graded .q-icon { display: none; }
+.options.is-graded .option-note { margin-top: 2px; padding-top: 0; font-size: 15px; line-height: 1.35; border-top: 0; }
+
 /* Lembar bawah dibatasi supaya pilihan dan sorotan di HP tidak tertutup. */
 .lesson-footer { position: sticky; bottom: 0; z-index: 5; max-height: 45vh; max-height: 45dvh; overflow-y: auto; background: var(--bg); border-top: 2px solid var(--line); }
 .lesson-footer.is-good { background: var(--good-soft); border-top-color: var(--good); }
@@ -448,15 +439,13 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 @media (min-width: 860px) {
   .lesson-main {
     grid-template-columns: 360px minmax(0, 1fr);
-    grid-template-rows: auto auto 1fr;
-    grid-template-areas: "phone coach" "phone inspect" "phone task";
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: "phone task";
     gap: 16px 40px;
     padding: 12px 16px 16px;
   }
-  .coach-slot { display: block; }
-  .inspect-slot { grid-area: inspect; align-self: auto; z-index: auto; }
-  .footer-inner { grid-template-columns: 1fr auto; align-items: end; padding: 20px 16px; }
-  .footer-inner .btn { grid-column: 2; width: auto; min-width: 200px; }
+  .task-slot { margin: auto 0; } /* di tengah, tapi bagian atasnya tidak terpotong kalau isinya panjang */
+  .footer-inner { padding: 18px 16px; }
   /* Layar selesai: tombol di bawah isi yang di tengah, bukan di pojok kanan */
   .lesson-footer.is-done .footer-inner { grid-template-columns: 1fr; max-width: 552px; }
   .lesson-footer.is-done .btn { grid-column: auto; width: 100%; }
@@ -504,9 +493,8 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 @media (max-width: 359px) {
   .chat-action { display: none; } /* layar sangat sempit: nomor pengirim lebih penting dari ikon */
 }
-.chat-title small { margin-top: 4px; font-size: 12px; font-weight: 400; color: var(--french); }
 .chat-action { margin-left: 8px; }
-.chat-body { justify-content: flex-end; background: var(--powder) url("../img/alam-siang.svg") center / cover; }
+.chat-body { justify-content: flex-end; background: var(--seashell) url("../img/wa-pola.svg") 0 0 / 160px repeat; } /* pola doodle ala WhatsApp */
 .bubble { position: relative; align-self: flex-start; max-width: 85%; margin: 0; padding: 7px 10px 8px; background: var(--seashell); border-radius: 12px; }
 .chat-body .date-chip + .bubble, .chat-body .system-notice + .bubble { border-top-left-radius: 0; }
 .chat-body .date-chip + .bubble::before, .chat-body .system-notice + .bubble::before {
@@ -523,7 +511,7 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 .system-notice { align-self: center; max-width: 94%; margin: 0 0 4px; padding: 6px 10px; font-size: 13px; text-align: center; color: var(--violet); background: var(--powder); border-radius: 10px; }
 .bubble-file { width: 82%; padding: 4px 4px 8px; }
 .bubble-file .meta { top: 2px; margin-right: 6px; }
-.tap.tap-file { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; background: var(--wheat); border-radius: 9px; }
+.part.tap-file { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; background: var(--powder); border-radius: 9px; }
 .file-icon { flex: none; display: grid; place-items: center; width: 36px; height: 44px; font-size: 11px; font-weight: 800; color: var(--seashell); background: var(--french); border-radius: 6px; }
 .file-meta strong { display: block; font-size: 15px; line-height: 1.25; word-break: break-word; }
 .file-meta small { font-size: 13px; color: var(--muted); }
@@ -549,7 +537,7 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 .email-from small { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
 
 /* Layar kunci */
-.phone-notif .screen { background: var(--french) url("../img/alam-senja.svg") center / cover; }
+.phone-notif .screen { background: var(--french) url("../img/lock-wallpaper.svg") center / cover; }
 .phone-notif .status-bar { color: var(--seashell); background: transparent; }
 .lock-screen { flex: 1; padding: 18px 12px; color: var(--seashell); text-align: center; }
 .lock-time { font-size: 64px; font-weight: 300; line-height: 1.1; }
@@ -561,45 +549,141 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 .notif-title { display: block; margin-top: 6px; }
 .notif-text { margin-top: 2px; font-size: 15px; }
 
-/* Bagian yang bisa diketuk */
-.tap { position: relative; padding: 0; font: inherit; color: inherit; text-align: left; background: none; border: 0; border-radius: 6px; cursor: pointer; }
+/* Bagian pesan: tampil seperti teks biasa; .part hanya penanda untuk sorotan setelah menjawab */
+.part { border-radius: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .tap-sender { display: inline-flex; align-items: center; min-height: 44px; }
 .tap-link { color: var(--link); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
 .tap-button { display: inline-block; margin-top: 4px; padding: 10px 18px; font-weight: 700; color: var(--seashell); background: var(--link); border-radius: 8px; }
-/* Bisa diketuk: garis French Blue penuh. Putus-putus khusus untuk "terlewat" setelah menjawab. */
-.is-inspecting .tap {
-  color: var(--violet);
-  text-decoration: none;
-  background: var(--powder);
-  border-radius: 8px;
-  box-shadow: 0 3px 0 var(--french);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-}
-.is-inspecting .tap-link, .is-inspecting .tap-sender { padding: 0 6px; }
-@media (hover: hover) { .is-inspecting .tap:hover { background: var(--wheat); } }
-.is-inspecting .tap:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--french); }
-.is-inspecting .tap.is-inspected { color: var(--seashell); background: var(--french); box-shadow: 0 3px 0 var(--violet); }
-.is-inspecting .tap.is-inspected small { color: var(--seashell); }
-.is-inspecting .tap.is-inspected .file-icon { background: var(--violet); }
+.link-preview { display: block; margin-top: 4px; font-size: 12px; color: var(--french); word-break: break-all; }
 
-/* Sorotan setelah menjawab. Semua tanda bahaya merah; garis penuh = ditemukan, putus-putus = terlewat. */
-.mark-found, .mark-missed { color: var(--ink); background: var(--bad-soft); border-radius: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.mark-found { box-shadow: 0 0 0 2px var(--bad); }
-.mark-missed { outline: 2px dashed var(--bad); outline-offset: 1px; }
+/* ---------- Mode soal: Pasangkan, Tebak link, Susun pesan ---------- */
+
+/* Pasangkan: dua kolom, bagian pesan di kiri, pertanyaan di kanan */
+.options-match { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.match-item { min-height: 60px; padding: 8px 10px; }
+.match-part .option-text { font-size: 15px; font-style: italic; line-height: 1.3; }
+.match-question .option-text strong { font-size: 15px; }
+.match-item .q-icon { width: 30px; height: 30px; border-radius: 8px; }
+.match-item .q-icon svg { width: 18px; height: 18px; }
+.match-item[aria-pressed="true"] { background: var(--brand-soft); border-color: var(--brand); }
+.match-item.is-matched { color: var(--muted); background: var(--good-soft); border-color: var(--good); border-style: solid; opacity: 1; animation: boing .35s ease-out; }
+.match-item.is-shaking { border-color: var(--bad); animation: shake .4s ease-in-out; }
+
+/* Tebak link: alamat ditulis rapat seperti di kolom alamat browser */
+.options-url .option-text strong { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 16px; letter-spacing: -.01em; overflow-wrap: anywhere; }
+
+/* Susun pesan: garis jawaban di atas, kepingan kata di bawah */
+.options-reply { gap: 14px; }
+.reply-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  min-height: 104px;
+  padding: 8px 0;
+  background: repeating-linear-gradient(to bottom, transparent 0 46px, var(--line) 46px 48px);
+}
+.reply-line.is-correct .tile { background: var(--good-soft); border-color: var(--good); }
+.reply-line.is-wrong .tile { background: var(--bad-soft); border-color: var(--bad); }
+.reply-bank { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.tile {
+  min-height: 44px;
+  padding: 8px 14px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.tile:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
+.tile:disabled { cursor: default; }
+
+/* Soal "Apa yang salah dari pesan ini?": potongan pesan sebagai pilihan, dua kolom supaya muat satu layar */
+.options-find { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.options-find .option { align-items: center; min-height: 56px; padding: 8px 10px; }
+.options-find .option-text strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.options-find .option-check { width: 22px; height: 22px; }
+
+/* ---------- Materi (materi.html): kartu penjelasan dan mini kuis ---------- */
+
+.lesson-main.is-text { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); grid-template-areas: "task"; }
+.lesson-main.is-text .task-slot { width: 100%; max-width: 640px; margin: auto; }
+.learn-card {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 18px 20px;
+  font-size: 18px;
+  line-height: 1.55;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: 18px;
+  animation: rise .25s ease-out;
+}
+.learn-source { font-size: 14px; color: var(--muted); }
+.options-quiz .option-text strong { overflow-wrap: anywhere; }
+.unit-materi { --unit: var(--violet); --unit-dark: var(--french); }
+.node-materi { color: var(--violet); background: var(--powder); box-shadow: 0 6px 0 var(--french); }
+:root[data-theme="dark"] .unit-materi { --unit: var(--french); --unit-dark: var(--powder); }
+
+/* ---------- Ronde Kilat (kilat.html) ---------- */
+
+.quick-main { display: block; }
+.quick-play { display: grid; gap: 14px; max-width: 520px; margin: 0 auto; padding-top: 8px; }
+.quick-intro p { margin-bottom: 0; }
+.quick-card {
+  padding: 16px 18px;
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--violet);
+  background: var(--seashell);
+  border: 3px solid var(--french);
+  border-bottom-width: 6px;
+  border-radius: 22px;
+  animation: pop .3s ease-out;
+}
+.quick-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 15px; }
+.quick-card-top small { margin-left: auto; color: var(--french); }
+.quick-card.is-correct { animation: boing .4s ease-out; }
+.quick-card.is-wrong { animation: shake .4s ease-in-out; }
+.quick-timer { height: 10px; overflow: hidden; background: var(--line); border-radius: 99px; }
+.quick-timer span { display: block; height: 100%; background: var(--brand); border-radius: 99px; transition: width .1s linear; }
+.quick-score { font-weight: 800; text-align: center; color: var(--muted); }
+.quick-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.btn-quiet { color: var(--ink); background: var(--bg); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); }
+.btn-real { color: var(--violet); background: var(--powder); box-shadow: 0 4px 0 var(--french); }
+.btn-scam { color: var(--violet); background: var(--wheat); box-shadow: 0 4px 0 var(--violet); }
+@media (min-width: 860px) {
+  .quick-buttons { grid-column: 1 / -1; max-width: 520px; width: 100%; margin: 0 auto; }
+  .quick-buttons .btn { grid-column: auto; width: 100%; min-width: 0; }
+  .lesson-footer:not(.is-good):not(.is-bad) .footer-inner:has(.quick-buttons) { grid-template-columns: 1fr; }
+}
+.node-quick { color: var(--violet); background: var(--wheat); box-shadow: 0 6px 0 var(--french); }
 
 /* ---------- Pelajaran di HP: semua dibuat ringkas supaya HP simulasi tetap terbaca ---------- */
 @media (max-width: 859px) {
   .lesson-top { padding: 6px 12px; }
   .context { flex: none; margin-bottom: 8px; padding: 8px 12px; font-size: 15px; }
-  .inspect-card { padding: 10px 12px; border-color: var(--brand); }
-  .inspect-card p { font-size: 15px; }
 
   /* Layar simulasi setinggi isi pesannya; bar ketik hanya hiasan, jadi disembunyikan. */
   .screen { aspect-ratio: auto; }
   .chat-input { display: none; }
 
-  .task-title { font-size: 20px; }
+  .task-head .mascot { width: 52px; height: 52px; }
+  .task-title { font-size: 19px; }
+  .task-head .coach-bubble { padding: 8px 12px; }
   .task-sub { margin: 2px 0 8px; font-size: 15px; line-height: 1.35; }
   .options { gap: 8px; }
   .option { padding: 10px 12px; }
@@ -608,15 +692,13 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
   .options-chips .q-icon, .options.is-graded .q-icon { width: 30px; height: 30px; border-radius: 8px; }
   .options-chips .q-icon svg, .options.is-graded .q-icon svg { width: 18px; height: 18px; }
   .options-chips .option-text strong { font-size: 15px; }
-  /* Setelah dinilai: soal sudah dijawab, jadi judulnya diganti penjelasan yang dipadatkan. */
-  .lesson-main.is-graded .task-title, .lesson-main.is-graded .task-sub { display: none; }
-  .options.is-graded .option { padding: 6px 10px; }
-  .options.is-graded .q-icon { display: none; }
-  .options.is-graded .option-text strong { font-size: 15px; }
-  .option-note { margin-top: 2px; padding-top: 0; font-size: 15px; line-height: 1.35; border-top: 0; }
+  .options-chips .option-text { flex: 1; min-width: 0; }
   .lesson-footer { max-height: 70vh; max-height: 70dvh; }
 
   .footer-inner { gap: 10px; padding: 10px 16px; }
+  .match-item { min-height: 46px; padding: 5px 8px; }
+  .match-item .q-icon { display: none; }
+  .learn-card { gap: 8px; margin-top: 8px; padding: 14px 16px; font-size: 16px; line-height: 1.5; }
   .feedback h2 { font-size: 19px; }
   .feedback > p { margin-top: 2px; font-size: 15px; }
 }
@@ -641,14 +723,8 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 .meter span { display: block; height: 100%; background: var(--good); border-radius: 99px; }
 .report-cta { margin-top: 28px; }
 
-/* ---------- Lagi Ragu? (ragu.html) dan Sudah Telanjur? (telanjur.html) ---------- */
+/* ---------- Tombol pilihan (panel pengaturan) ---------- */
 
-.page-lede { margin: -4px 0 24px; font-size: 17px; color: var(--muted); }
-
-.doubt-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-.doubt-item { padding: 14px 16px 16px; background: var(--bg); border: 2px solid var(--line); border-radius: 16px; }
-.doubt-item fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
-.doubt-item legend { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 0; font-size: 17px; font-weight: 700; line-height: 1.35; }
 .answers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .answer { position: relative; display: grid; }
 .answer input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
@@ -667,63 +743,51 @@ a.node:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--unit-dark,
 }
 @media (hover: hover) { .answer:hover span { background: var(--surface); } }
 .answer input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
-/* Pilihan netral: hanya hasil di bawah yang berwarna, supaya "Tidak" tidak terbaca "aman". */
 .answer input:checked + span { color: var(--ink); background: var(--brand-soft); border-color: var(--brand); }
 
-.verdict { margin-top: 20px; padding: 18px; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; animation: rise .25s ease-out; }
-.verdict h2 { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 21px; line-height: 1.3; }
-.verdict h2 .icon { flex: none; margin-top: 1px; }
-.verdict h2 .icon svg { width: 26px; height: 26px; }
-.verdict p + p, .verdict-list + p { margin-top: 10px; }
-.verdict-incomplete { border-style: dashed; animation: none; }
-.verdict-wait { font-weight: 700; color: var(--muted); }
-.verdict-danger { background: var(--bad-soft); border-color: var(--bad); }
-.verdict-danger h2 { color: var(--bad-dark); }
-.verdict-unsure { background: var(--good-soft); border-color: var(--muted); }
-.verdict-unsure h2 { color: var(--ink); }
-.verdict-list { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
-.verdict-list li { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-.verdict-list .q-icon { width: 34px; height: 34px; background: var(--bg); }
-.verdict-list .q-icon svg { width: 19px; height: 19px; }
-.verdict-also { margin-top: 12px; font-weight: 700; }
-.verdict-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; font-weight: 700; color: var(--bad-dark); text-underline-offset: 3px; }
-
-.situations { display: grid; gap: 10px; }
-.situation { background: var(--bg); border: 2px solid var(--line); border-radius: 16px; }
-.situation[open] { border-color: var(--bad); }
-.situation summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 58px;
-  padding: 12px 18px;
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1.3;
-  list-style: none;
-  cursor: pointer;
-}
-.situation summary::-webkit-details-marker { display: none; }
-.situation summary::after { content: ""; flex: none; width: 9px; height: 9px; border: solid var(--muted); border-width: 0 3px 3px 0; transform: rotate(45deg) translateY(-3px); transition: transform .15s; }
-.situation[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
-.situation[open] summary { color: var(--bad-dark); }
-.steps { display: grid; gap: 10px; margin: 0; padding: 0 18px 18px 40px; }
-.steps li::marker { font-weight: 800; color: var(--bad-dark); }
-.steps a { color: var(--link); text-underline-offset: 2px; }
-
-.contacts { margin: 0; padding: 0; list-style: none; border-top: 2px solid var(--line); }
-.contact { display: block; padding: 12px 4px; color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--line); }
-@media (hover: hover) { .contact:hover { background: var(--surface); } }
-.contact strong { display: block; font-size: 18px; color: var(--link); }
-.contact span { display: block; font-size: 15px; color: var(--muted); }
-.contact-urgent strong { color: var(--bad-dark); }
-
-/* ---------- Animasi ---------- */
+/* ---------- Animasi: biar terasa seperti game ---------- */
 
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes pop { 0% { transform: scale(.6); } 70% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes boing { 40% { transform: scale(.93); } 70% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+@keyframes sheet-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes float-up { 0% { opacity: 0; transform: translateY(10px) scale(.7); } 30% { opacity: 1; transform: translateY(-4px) scale(1.15); } 100% { transform: none; } }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes hop { 30% { transform: translateY(-16px) rotate(-6deg); } 60% { transform: translateY(0) rotate(4deg); } 100% { transform: none; } }
+@keyframes wobble { 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+@keyframes fall { to { transform: translateY(110vh) rotate(calc(var(--spin) + 600deg)); } }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+
+/* Lupi hidup: melayang pelan, berkedip, lompat kalau senang, geleng kalau "waduh". */
+.mascot svg { overflow: visible; }
+.m-body { transform-box: fill-box; transform-origin: 50% 100%; animation: bob 2.6s ease-in-out infinite; }
+.m-eyes { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+.mascot-cheer .m-body { animation: hop .6s ease-out 2, bob 2.6s ease-in-out 1.2s infinite; }
+.mascot-oops .m-body { animation: wobble .5s ease-in-out, bob 2.6s ease-in-out .5s infinite; }
+
+/* Ketukan terasa: pilihan membal; hasil benar memantul, salah bergetar. */
+.is-bumped { animation: boing .25s ease-out; }
+.option.is-found, .option.is-correct { animation: boing .4s ease-out; }
+.option.is-missed, .option.is-extra, .option.is-wrong { animation: shake .4s ease-in-out; }
+.node-current { animation: pulse 1.6s ease-in-out infinite; }
+
+/* Lembar hasil naik dari bawah, dengan seruan, +XP, dan combo. */
+.lesson-footer.is-good .footer-inner, .lesson-footer.is-bad .footer-inner { animation: sheet-up .25s ease-out; }
+.feedback-cheer { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 2px; font-family: var(--font-display); font-size: 15px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.feedback-cheer.is-quip { font-family: var(--font); font-size: 16px; letter-spacing: 0; text-transform: none; }
+.is-good .feedback-cheer { color: var(--good-dark); }
+.is-bad .feedback-cheer { color: var(--bad-dark); }
+.xp-pop, .combo { display: inline-block; padding: 2px 10px; font-size: 13px; border-radius: 99px; animation: float-up .5s ease-out both; }
+.xp-pop { color: var(--on-brand); background: var(--brand); }
+.combo { color: var(--violet); background: var(--wheat); border: 2px solid var(--violet); animation-delay: .15s; }
+
+/* Confetti di layar "Sempurna!" */
+.confetti { position: fixed; inset: 0; z-index: 30; overflow: hidden; pointer-events: none; }
+.confetti i { position: absolute; top: -24px; width: 10px; height: 16px; border-radius: 3px; transform: rotate(var(--spin)); animation: fall 2.6s ease-in forwards; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  .confetti { display: none; }
 }

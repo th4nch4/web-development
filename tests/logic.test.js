@@ -19,12 +19,78 @@ const questions = [
   { id: "minta", title: "Minta?", hint: "" }
 ];
 
+test("gradeFind: semua bagian mencurigakan ditandai, tanpa salah tandai", () => {
+  const result = CekLogic.gradeFind([true, false, true], [0, 2]);
+  assert.deepEqual(result, { found: [0, 2], missed: [], extra: [], total: 2, allCorrect: true });
+});
+
+test("gradeFind: bagian yang terlewat dan bagian wajar yang ikut ditandai", () => {
+  const result = CekLogic.gradeFind([true, false, true], [1, 2]);
+  assert.deepEqual(result.found, [2]);
+  assert.deepEqual(result.missed, [0]);
+  assert.deepEqual(result.extra, [1]);
+  assert.equal(result.allCorrect, false);
+});
+
+test("gradeFind: pesan asli benar kalau tidak ada yang ditandai", () => {
+  assert.equal(CekLogic.gradeFind([false, false], []).allCorrect, true);
+  assert.equal(CekLogic.gradeFind([false, false], [0]).allCorrect, false);
+});
+
+test("gradeFind: pesan penipuan salah kalau tidak ada yang ditandai", () => {
+  const result = CekLogic.gradeFind([true, false], []);
+  assert.deepEqual(result.missed, [0]);
+  assert.equal(result.allCorrect, false);
+});
+
+test("gradeMatch: pasangan yang sempat salah dihitung terlewat", () => {
+  const result = CekLogic.gradeMatch(scam, ["file"]);
+  assert.deepEqual(result.found, ["siapa"]);
+  assert.deepEqual(result.missed, ["file"]);
+  assert.equal(result.allCorrect, false);
+  assert.equal(CekLogic.gradeMatch(scam, []).allCorrect, true);
+});
+
+test("gradeReply: urutan harus sama persis", () => {
+  assert.equal(CekLogic.gradeReply(["jangan", "kirim", "kode"], ["jangan", "kirim", "kode"]), true);
+  assert.equal(CekLogic.gradeReply(["jangan", "kirim", "kode"], ["kirim", "jangan", "kode"]), false);
+  assert.equal(CekLogic.gradeReply(["jangan", "kirim"], ["jangan", "kirim", "aja"]), false);
+});
+
+test("quickScore: menghitung benar dan combo terpanjang", () => {
+  assert.deepEqual(CekLogic.quickScore([true, true, false, true, true, true]), { right: 5, total: 6, bestStreak: 3 });
+  assert.deepEqual(CekLogic.quickScore([]), { right: 0, total: 0, bestStreak: 0 });
+});
+
+test("recordQuick: menambah XP dan menyimpan skor terbaik tanpa mengubah progres lama", () => {
+  const before = { xp: 10, lessons: {} };
+  const after = CekLogic.recordQuick(before, 1, 4);
+  assert.equal(after.xp, 10 + 4 * CekLogic.XP_QUICK);
+  assert.deepEqual(after.quick, { 1: 4 });
+  assert.deepEqual(before, { xp: 10, lessons: {} });
+  assert.equal(CekLogic.recordQuick(after, 1, 2).quick[1], 4);
+});
+
+test("isQuickUnlocked: terbuka setelah semua pelajaran di bagian itu selesai", () => {
+  const scenarios = [{ id: "a", unit: 1 }, { id: "b", unit: 1 }, { id: "c", unit: 2 }];
+  const lesson = { found: [], missed: [], extra: [], actionCorrect: true, xp: 10 };
+  assert.equal(CekLogic.isQuickUnlocked(scenarios, { xp: 0, lessons: { a: lesson } }, 1), false);
+  assert.equal(CekLogic.isQuickUnlocked(scenarios, { xp: 0, lessons: { a: lesson, b: lesson } }, 1), true);
+});
+
+test("recordLesson mempertahankan skor Ronde Kilat", () => {
+  const before = { xp: 0, lessons: {}, quick: { 1: 3 } };
+  const after = CekLogic.recordLesson(before, "palsu", CekLogic.gradeFlags(scam, ["siapa", "file"]), { correct: true });
+  assert.deepEqual(after.quick, { 1: 3 });
+});
+
 function fakeStorage(initial = {}) {
   const data = { ...initial };
   return {
     getItem: (key) => (key in data ? data[key] : null),
     setItem: (key, value) => { data[key] = String(value); },
     removeItem: (key) => { delete data[key]; }
+
   };
 }
 
@@ -147,33 +213,16 @@ test("saveProgress mengembalikan false kalau penyimpanan menolak", () => {
   assert.equal(CekLogic.saveProgress(null, CekLogic.emptyProgress()), false);
 });
 
-const ids = ["siapa", "file", "minta"];
-
-test("doubtVerdict: satu jawaban 'ya' sudah cukup untuk berbahaya, walau belum semua dijawab", () => {
-  const verdict = CekLogic.doubtVerdict(ids, { file: "ya" });
-  assert.equal(verdict.level, "danger");
-  assert.deepEqual(verdict.yes, ["file"]);
+test("recordMateri: menambah XP dan menyimpan skor terbaik", () => {
+  const before = { xp: 0, lessons: {} };
+  const after = CekLogic.recordMateri(before, "vishing", 2);
+  assert.equal(after.xp, 2 * CekLogic.XP_MATERI);
+  assert.deepEqual(after.materi, { vishing: 2 });
+  assert.deepEqual(before, { xp: 0, lessons: {} });
+  assert.equal(CekLogic.recordMateri(after, "vishing", 1).materi.vishing, 2);
 });
 
-test("doubtVerdict: tanpa 'ya', pertanyaan yang belum dijawab membuat hasil belum lengkap", () => {
-  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak" });
-  assert.equal(verdict.level, "incomplete");
-  assert.equal(verdict.remaining, 2);
-});
-
-test("doubtVerdict: 'tidak yakin' tidak pernah dianggap aman", () => {
-  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak", file: "ragu", minta: "tidak" });
-  assert.equal(verdict.level, "unsure");
-  assert.deepEqual(verdict.unsure, ["file"]);
-});
-
-test("doubtVerdict: semua 'tidak' berarti tidak ketemu tanda, bukan aman", () => {
-  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak", file: "tidak", minta: "tidak" });
-  assert.equal(verdict.level, "none-found");
-});
-
-test("doubtVerdict: jawaban yang tidak dikenal dihitung belum dijawab", () => {
-  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak", file: "mungkin", minta: "tidak", lain: "ya" });
-  assert.equal(verdict.level, "incomplete");
-  assert.equal(verdict.remaining, 1);
+test("loadProgress menolak skor materi yang bukan angka", () => {
+  const storage = fakeStorage({ [CekLogic.STORAGE_KEY]: JSON.stringify({ xp: 1, lessons: {}, materi: { vishing: "x" } }) });
+  assert.deepEqual(CekLogic.loadProgress(storage), CekLogic.emptyProgress());
 });

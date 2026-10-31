@@ -6,6 +6,8 @@ const CekLogic = (() => {
   const XP_LESSON = 10;
   const XP_ALL_FLAGS = 5;
   const XP_RIGHT_ACTION = 5;
+  const XP_QUICK = 2; // per jawaban benar di Ronde Kilat
+  const XP_MATERI = 2; // per jawaban benar di materi
 
   /** @returns {{ xp: number, lessons: Object<string, object> }} */
   function emptyProgress() {
@@ -24,6 +26,49 @@ const CekLogic = (() => {
     const missed = scenario.flags.filter((id) => !picked.includes(id));
     const extra = picked.filter((id) => !scenario.flags.includes(id));
     return { found, missed, extra, allCorrect: missed.length === 0 && extra.length === 0 };
+  }
+
+  /**
+   * Langkah "Cari": bandingkan bagian pesan yang ditandai pemain dengan bagian yang memang mencurigakan.
+   * @param {boolean[]} suspicious  per bagian pesan (urut seperti di layar): true kalau mencurigakan
+   * @param {number[]} picked  indeks bagian yang ditandai pemain
+   * @returns {{ found: number[], missed: number[], extra: number[], total: number, allCorrect: boolean }}
+   */
+  function gradeFind(suspicious, picked) {
+    const indexes = suspicious.map((_, index) => index);
+    const found = indexes.filter((i) => suspicious[i] && picked.includes(i));
+    const missed = indexes.filter((i) => suspicious[i] && !picked.includes(i));
+    const extra = indexes.filter((i) => !suspicious[i] && picked.includes(i));
+    return { found, missed, extra, total: found.length + missed.length, allCorrect: missed.length === 0 && extra.length === 0 };
+  }
+
+  /**
+   * Soal "Pasangkan" dinilai seperti soal tanda bahaya: pasangan yang langsung benar = ditemukan,
+   * pasangan yang sempat salah = terlewat. Hasilnya dipakai rapor dengan cara yang sama.
+   * @param {{ flags: string[] }} scenario
+   * @param {string[]} wrongFlags  pertanyaan yang sempat salah dipasangkan
+   */
+  function gradeMatch(scenario, wrongFlags) {
+    return gradeFlags(scenario, scenario.flags.filter((id) => !wrongFlags.includes(id)));
+  }
+
+  /** Soal "Susun": benar kalau urutan keping kata sama persis dengan jawabannya. */
+  function gradeReply(words, answer) {
+    return answer.length === words.length && answer.every((word, i) => word === words[i]);
+  }
+
+  /**
+   * Ronde Kilat: skor dan combo terpanjang.
+   * @param {boolean[]} answers  true kalau jawaban benar, urut seperti dimainkan
+   */
+  function quickScore(answers) {
+    let streak = 0;
+    let best = 0;
+    answers.forEach((right) => {
+      streak = right ? streak + 1 : 0;
+      best = Math.max(best, streak);
+    });
+    return { right: answers.filter(Boolean).length, total: answers.length, bestStreak: best };
   }
 
   /**
@@ -53,9 +98,35 @@ const CekLogic = (() => {
       xp
     };
     return {
+      ...progress,
       xp: progress.xp + xp,
       lessons: { ...progress.lessons, [scenarioId]: lesson }
     };
+  }
+
+  /** Ronde Kilat: tambah XP dan simpan skor terbaik per bagian. Progres lama tidak diubah. */
+  function recordQuick(progress, unitId, right) {
+    const quick = progress.quick || {};
+    return {
+      ...progress,
+      xp: progress.xp + right * XP_QUICK,
+      quick: { ...quick, [unitId]: Math.max(quick[unitId] || 0, right) }
+    };
+  }
+
+  /** Materi: tambah XP dan simpan skor terbaik per materi. Progres lama tidak diubah. */
+  function recordMateri(progress, materiId, right) {
+    const materi = progress.materi || {};
+    return {
+      ...progress,
+      xp: progress.xp + right * XP_MATERI,
+      materi: { ...materi, [materiId]: Math.max(materi[materiId] || 0, right) }
+    };
+  }
+
+  /** Ronde Kilat sebuah bagian terbuka setelah semua pelajaran di bagian itu selesai. */
+  function isQuickUnlocked(scenarios, progress, unitId) {
+    return scenarios.filter((s) => s.unit === unitId).every((s) => isDone(progress, s.id));
   }
 
   function isDone(progress, scenarioId) {
@@ -100,25 +171,6 @@ const CekLogic = (() => {
     };
   }
 
-  /**
-   * Hasil halaman "Lagi Ragu?". Sengaja tidak pernah menyimpulkan "aman":
-   * paling jauh "tidak ketemu tanda" dari 5 pertanyaan.
-   * @param {string[]} questionIds
-   * @param {Object<string, string>} answers  id pertanyaan -> "ya" | "tidak" | "ragu"
-   * @returns {{ level: "danger"|"incomplete"|"unsure"|"none-found", yes: string[], unsure: string[], remaining: number }}
-   */
-  function doubtVerdict(questionIds, answers) {
-    const answered = (value) => (id) => answers[id] === value;
-    const yes = questionIds.filter(answered("ya"));
-    const unsure = questionIds.filter(answered("ragu"));
-    const remaining = questionIds.length - yes.length - unsure.length - questionIds.filter(answered("tidak")).length;
-    let level = "none-found";
-    if (yes.length > 0) level = "danger";
-    else if (remaining > 0) level = "incomplete";
-    else if (unsure.length > 0) level = "unsure";
-    return { level, yes, unsure, remaining };
-  }
-
   function isValidLesson(lesson) {
     return Boolean(lesson)
       && Array.isArray(lesson.found)
@@ -126,12 +178,19 @@ const CekLogic = (() => {
       && Array.isArray(lesson.extra);
   }
 
+  // Skor tambahan (Ronde Kilat, materi) boleh tidak ada; kalau ada, isinya angka.
+  function isScoreMap(value) {
+    return value === undefined || (Boolean(value) && typeof value === "object" && Object.values(value).every(Number.isFinite));
+  }
+
   function isValidProgress(value) {
     return Boolean(value)
       && typeof value === "object"
       && Number.isFinite(value.xp) && value.xp >= 0
       && Boolean(value.lessons) && typeof value.lessons === "object"
-      && Object.values(value.lessons).every(isValidLesson);
+      && Object.values(value.lessons).every(isValidLesson)
+      && isScoreMap(value.quick)
+      && isScoreMap(value.materi);
   }
 
   // Penyimpanan bisa tidak tersedia (mode privat, diblokir). Progres kosong adalah cadangan yang aman.
@@ -169,16 +228,26 @@ const CekLogic = (() => {
   return {
     NO_FLAGS,
     STORAGE_KEY,
+    XP_ALL_FLAGS,
+    XP_RIGHT_ACTION,
     emptyProgress,
+    gradeFind,
+    gradeMatch,
+    gradeReply,
+    quickScore,
     gradeFlags,
     gradeAction,
     lessonXp,
     recordLesson,
+    recordQuick,
+    recordMateri,
+    XP_MATERI,
+    isQuickUnlocked,
+    XP_QUICK,
     isDone,
     isUnlocked,
     currentIndex,
     buildReport,
-    doubtVerdict,
     loadProgress,
     saveProgress,
     clearProgress

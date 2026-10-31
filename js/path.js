@@ -8,9 +8,9 @@
   const doneCount = SCENARIOS.filter((s) => CekLogic.isDone(progress, s.id)).length;
 
   function coachText() {
-    if (doneCount === 0) return "Halo, aku Lupi! Yuk mulai dari pelajaran pertama.";
-    if (current === -1) return "Semua selesai! Cek rapormu.";
-    return `Mantap, ${doneCount} dari ${SCENARIOS.length} selesai!`;
+    if (doneCount === 0) return "Halo, aku Lupi! Bareng aku, yuk latihan nyari pesan penipuan.";
+    if (current === -1) return "Semua beres, kamu keren! Intip rapormu, yuk.";
+    return `Mantap, ${doneCount} dari ${SCENARIOS.length} beres! Gas lanjut?`;
   }
 
   function pathItem(node, label, position, badge) {
@@ -38,13 +38,44 @@
     return pathItem(node, scenario.title, index, badge);
   }
 
+  // Ronde Kilat: bonus di akhir setiap bagian, terbuka setelah semua pelajaran bagian itu selesai.
+  function quickNode(unit, position) {
+    const best = (progress.quick || {})[unit.id];
+    const label = best === undefined ? "Ronde Kilat" : `Ronde Kilat · skor ${best}`;
+    const node = CekLogic.isQuickUnlocked(SCENARIOS, progress, unit.id)
+      ? el("a", { className: "node node-quick", href: `kilat.html?unit=${unit.id}`, "aria-label": `${label}: asli atau penipuan?` }, icon("bolt"))
+      : el("span", { className: "node node-locked", role: "img", "aria-label": "Ronde Kilat, terbuka setelah semua pelajaran di bagian ini selesai" }, icon("bolt"));
+    return pathItem(node, label, position, null);
+  }
+
+  // Materi "Kenali Jenis Phishing": selalu terbuka, boleh dibuka dengan urutan mana saja.
+  function materiSection() {
+    const scores = progress.materi || {};
+    const items = MATERI.map((materi, index) => {
+      const done = scores[materi.id] !== undefined;
+      const node = el("a", {
+        className: done ? "node node-done" : "node node-materi",
+        href: `materi.html?m=${encodeURIComponent(materi.id)}`,
+        "aria-label": `Materi: ${materi.title}${done ? ", selesai, ulangi" : ""}`
+      }, icon(done ? "check" : materi.icon));
+      return pathItem(node, materi.title, index, null);
+    });
+    return el("section", { className: "unit unit-materi", "aria-label": "Materi: Kenali Jenis Phishing" }, [
+      el("div", { className: "unit-banner" }, [el("span", { className: "unit-kicker", text: "Materi" }), el("h2", { text: "Kenali jenis phishing" })]),
+      el("ol", { className: "path" }, items)
+    ]);
+  }
+
   function unitSection(unit) {
-    const items = SCENARIOS
+    const lessons = SCENARIOS
       .map((scenario, index) => ({ scenario, index }))
-      .filter(({ scenario }) => scenario.unit === unit.id)
-      .map(({ scenario, index }) => lessonNode(scenario, index));
+      .filter(({ scenario }) => scenario.unit === unit.id);
+    const items = [
+      ...lessons.map(({ scenario, index }) => lessonNode(scenario, index)),
+      quickNode(unit, lessons[lessons.length - 1].index + 1)
+    ];
     return el("section", { className: `unit unit-${unit.id}`, "aria-label": `${unit.title}: ${unit.subtitle}` }, [
-      el("div", { className: "unit-banner" }, [el("h2", { text: unit.subtitle })]),
+      el("div", { className: "unit-banner" }, [el("span", { className: "unit-kicker", text: unit.title }), el("h2", { text: unit.subtitle })]),
       el("ol", { className: "path" }, items)
     ]);
   }
@@ -70,7 +101,7 @@
 
   document.getElementById("xp").replaceChildren(CekUI.xpChip(progress.xp));
   CekUI.renderCoach(document.getElementById("coach"), coachText(), "happy");
-  document.getElementById("units").replaceChildren(...UNITS.map(unitSection), reportPath());
+  document.getElementById("units").replaceChildren(materiSection(), ...UNITS.map(unitSection), reportPath());
   document.getElementById("storage-note").hidden = Boolean(storage);
   setupReset();
 })();

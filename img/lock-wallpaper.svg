@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="956" viewBox="0 0 440 956" preserveAspectRatio="xMidYMid slice">
+  <!-- Wallpaper layar kunci: gelombang lembut berlapis, gaya wallpaper iPhone. Hanya warna palet, tanpa gradasi. -->
+  <rect width="440" height="956" fill="#3E4B8E"/>
+  <circle cx="430" cy="430" r="140" fill="#A6BCC9"/>
+  <circle cx="10" cy="300" r="110" fill="#3D1534"/>
+  <path d="M0 560C90 500 170 520 250 560s140 50 190 10V956H0z" fill="#3D1534"/>
+  <path d="M0 650c80-40 160-30 230 10s150 50 210 0V956H0z" fill="#A6BCC9"/>
+  <path d="M0 760c100-50 180-40 250 0s130 40 190 0V956H0z" fill="#F6E0B6"/>
+  <path d="M0 860c90-30 170-20 240 10s140 30 200-10V956H0z" fill="#FFF4EB"/>
+  <g fill="#FFF4EB">
+    <circle cx="70" cy="120" r="2"/><circle cx="150" cy="70" r="1.5"/><circle cx="260" cy="200" r="2"/>
+    <circle cx="330" cy="330" r="1.5"/><circle cx="110" cy="420" r="1.5"/><circle cx="400" cy="460" r="2"/>
+  </g>
+</svg>

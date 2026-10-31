@@ -17,8 +17,11 @@ Klik dua kali `index.html`, atau pakai Live Server di VS Code. Tidak perlu insta
 | File | Isi | Pemegang |
 |---|---|---|
 | `index.html` + `js/path.js` | Beranda: jalur belajar (peta pelajaran) | Ketua |
-| `ragu.html` + `js/ragu.js` | "Lagi Ragu?": 5 pertanyaan ya/tidak untuk pesan nyata, tidak pernah bilang "aman" | Anggota 4 |
-| `telanjur.html` | "Sudah Telanjur?": langkah darurat dan kontak resmi (diperiksa 30 Okt 2026) | Anggota 4 |
+| `materi.html` + `js/belajar.js` | Materi "Kenali jenis phishing": kartu penjelasan + mini kuis | Ketua |
+| `js/materi.js` | **Isi materi phishing** (Vishing, Email, SMS, Chat & Medsos, QR) | Konten |
+| `kilat.html` + `js/kilat.js` | Ronde Kilat "Asli atau Penipuan?" (ada mode tanpa waktu) | Ketua |
+| `js/kit.js` | Bagian umum halaman soal: tombol utama, lembar hasil, Lupi, pilihan | Ketua |
+| `js/sound.js` | Efek suara (dibuat di browser, bisa dimatikan di ⚙) | Tampilan |
 | `simulator.html` + `js/engine.js` | Mesin pelajaran: Periksa → Tanda bahaya → Tindakan | Ketua |
 | `js/phone.js` | Menggambar HP simulasi bergaya iPhone (chat ala WhatsApp, SMS, email, layar kunci) | Ketua |
 | `rapor.html` + `js/report.js` | Rapor hasil belajar | Ketua |
@@ -31,8 +34,7 @@ Klik dua kali `index.html`, atau pakai Live Server di VS Code. Tidak perlu insta
 | `img/` | Wallpaper alam buatan sendiri (SVG, hanya warna palet, bebas hak cipta) | Tampilan |
 | `fonts/` | Huruf judul Bricolage Grotesque (lisensi OFL di `fonts/OFL.txt`), disimpan lokal tanpa CDN | Tampilan |
 
-"Lagi Ragu?" dan "Sudah Telanjur?" sudah ada versi pertamanya. Kalau mengubah kontak resmi di
-`telanjur.html`, cocokkan dulu dengan situs resmi lembaganya dan perbarui tanggal pemeriksaannya.
+Kalau mengubah materi, cek ulang nama merek dan alamat situs di `js/materi.js` sebelum dikumpulkan.
 
 ## Warna
 
@@ -57,4 +59,4 @@ python tests/e2e_flow.py         # main semua pelajaran + halaman bantuan di bro
 ```
 
 Tes E2E juga memastikan tidak ada error JavaScript, tidak ada permintaan jaringan keluar,
-klik ganda tidak melompati umpan balik, dan "Lagi Ragu?" tidak pernah menyimpulkan "aman".
+klik ganda tidak melompati umpan balik, dan setiap soal muat satu layar tanpa gulir.

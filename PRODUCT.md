@@ -31,7 +31,7 @@ Sukses berarti juri bisa menyelesaikan satu alur di link langsung tanpa error, m
 
 Empat hal yang membedakan CekDulu dan harus dijaga di semua pekerjaan berikutnya:
 
-1. **Periksa dulu, baru dibongkar.** Pengguna mengetuk pengirim, link, atau file di HP simulasi dan melihat faktanya, misalnya alamat asli di balik tombol. Setelah itu mereka menilai sendiri lewat 5 Pertanyaan Sebelum Klik, lalu tanda yang ditemukan dan yang terlewat disorot di pesan.
+1. **Cari sendiri dulu, baru dibongkar.** Pengguna mengetuk sendiri bagian pesan yang menurutnya mencurigakan. Bagian yang wajar juga bisa diketuk dan tampil sama, jadi tidak ada petunjuk jawaban. Setelah itu mereka menilai lewat 5 Pertanyaan Sebelum Klik, dan penjelasan baru muncul setelah menjawab.
 2. **Tidak semua pesan itu penipuan.** Ada pesan asli. Mencurigai pesan asli dihitung keliru, dan nadanya tidak menakut-nakuti.
 3. **Bantuan saat ragu.** "Lagi Ragu?" memeriksa pesan nyata dengan 5 pertanyaan dan tidak pernah menyimpulkan "aman". "Sudah Telanjur?" berisi langkah darurat dan kontak resmi.
 4. **Privasi total.** Tanpa login, tanpa server, tanpa AI. Tidak ada data yang dikirim ke mana pun.
@@ -51,7 +51,7 @@ Empat hal yang membedakan CekDulu dan harus dijaga di semua pekerjaan berikutnya
 
 **Yang sudah ada:**
 - Beranda dengan jalur belajar: 6 pelajaran dalam 2 bagian, XP, dan maskot Lupi (kaca pembesar).
-- Simulator pelajaran: Periksa → Tanda bahaya → Tindakan → Selesai.
+- Simulator pelajaran, 3 soal ala Duolingo: Cari (ketuk bagian mencurigakan) → Tanda bahaya apa saja → Tindakan → Selesai.
 - Rapor.
 - `ragu.html` ("Lagi Ragu?") dan `telanjur.html` ("Sudah Telanjur?").
 
@@ -84,7 +84,7 @@ XP yang bertambah setiap kali pelajaran diulang memang disengaja.
 - Seluruh website hanya memakai 5 warna palet (lihat README). Pengecualian: abu-abu gelap untuk mode gelap.
 - Tampilan Sistem/Terang/Gelap lewat tombol ⚙, bawaan Sistem. Mode gelap berlatar abu-abu gelap (bukan ungu) dengan aksen dari palet. HP simulasi selalu tampil terang karena meniru aplikasi sungguhan.
 - HP simulasi berproporsi iPhone Pro Max sungguhan (layar 440 × 956) di laptop. Di layar satu kolom (HP, tablet) tinggi layarnya mengikuti isi pesan, supaya seluruh pesan terlihat tanpa gulir dan tidak tertutup tombol bawah. Wallpaper alamnya digambar sendiri.
-- Soal tanda bahaya langsung muncul setelah ketukan pertama di pesan, tanpa tombol Lanjut. Bagian pesan yang bisa diketuk berupa kotak ala Duolingo.
+- (31 Okt 2026) Setiap soal tampil bersama HP simulasi dan muat satu layar tanpa gulir; HP simulasi diperkecil otomatis. Jawaban tidak pernah dibocorkan sebelum pemain menjawab: tidak ada kotak penanda dan tidak ada kartu "hasil periksa". Lupi muncul di samping setiap soal.
 
 **Masih terbuka:** isi akhir "Lagi Ragu?" dan "Sudah Telanjur?" (versi pertama dibuat Claude; pemiliknya Anggota 4).
 
@@ -92,7 +92,7 @@ XP yang bertambah setiap kali pelajaran diulang memang disengaja.
 
 - Nama **CekDulu** sudah final.
 - Bahasa Indonesia yang santai dan hangat, tidak menggurui.
-- Maskot Lupi, kaca pembesar (French Blue).
+- Maskot Lupi, kaca pembesar imut (French Blue) dengan mata besar, pipi merona, tangan, dan kaki. Ekspresi: senang, mikir, waduh, sorak.
 - Tim memilih mekanik belajar ala Duolingo (jalur pelajaran, umpan balik instan, XP) tetapi dengan identitas sendiri, tanpa branding Duolingo.
 
 ## Evidence on Hand
@@ -121,3 +121,10 @@ Belum ada testimoni, hasil uji pengguna, atau data pemakaian. Jangan mengarang s
   - menghormati `prefers-reduced-motion`.
 - Teks harus besar dan mudah dibaca di HP (dasar 18px).
 - Hindari scroll di dalam area soal; pengguna diminta sedikit scroll.
+
+**Perubahan 31 Oktober 2026 (permintaan ketua):**
+- Halaman "Lagi Ragu?" (`ragu.html`) dan "Sudah Telanjur?" (`telanjur.html`) dihapus, termasuk tombolnya di bar atas. Catatan lama tentang kedua halaman itu di dokumen ini tidak berlaku lagi.
+- Ada materi "Kenali jenis phishing" (`materi.html`, isi di `js/materi.js`): Voice Phishing, Email Phishing (5 kuis tautan palsu), SMS Phishing, Chat & Medsos, dan QR Code palsu. Kuis tautan memakai nama merek sungguhan sesuai naskah tim; alamat palsunya hanya teks dan tidak bisa diklik.
+- Soal pertama pelajaran: "Apa yang salah dari pesan ini?". Pilihannya potongan pesan itu sendiri, diacak, dan tanpa sorotan di HP simulasi.
+- Wallpaper chat bermotif doodle ala WhatsApp; layar kunci memakai wallpaper gelombang. Keduanya hanya warna palet.
+- Lupi punya celetukan sendiri untuk setiap pesan dan ekspresi "curiga" serta "memancing".
