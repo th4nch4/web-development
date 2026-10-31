@@ -20,7 +20,7 @@
 */
 
 const UNITS = [
-  { id: 1, title: "Bagian 1", subtitle: "File dan link palsu" },
+  { id: 1, title: "Bagian 1", subtitle: "Paket, file, dan link" },
   { id: 2, title: "Bagian 2", subtitle: "Kode OTP dan pesan asli" }
 ];
 
@@ -62,6 +62,35 @@ const SCENARIOS = [
       { label: "Blokir dan laporkan nomornya", correct: true, why: "Nomor tak dikenal yang mengirim file aplikasi tidak perlu ditanggapi." }
     ],
     takeaway: "Undangan, foto paket, dan surat tilang tidak pernah berbentuk file .apk. Kalau diminta meng-install sesuatu, berhenti."
+  },
+  {
+    id: "pesanan-dikirim",
+    unit: 1,
+    title: "Pesanan dikirim",
+    app: "notif",
+    context: "Kemarin kamu memesan sepatu di aplikasi belanja Pasar Rimbun.",
+    sender: {
+      name: "Pasar Rimbun",
+      detail: "Notifikasi dari aplikasi Pasar Rimbun yang kamu install sendiri dari toko aplikasi resmi."
+    },
+    subject: "Pesananmu sedang dikirim",
+    messages: [
+      ["Pesanan #PR-20817 (sepatu) sudah diserahkan ke kurir. Estimasi tiba Jumat, 6 Nov. Lacak di halaman Pesanan."]
+    ],
+    flags: [],
+    verdict: "Ini pesan asli. Datang dari aplikasi resmi, cocok dengan pesananmu, tanpa link, dan tidak meminta apa pun.",
+    evidence: {},
+    clear: {
+      siapa: "Datang dari aplikasi resmi yang kamu install sendiri, dan cocok dengan pesananmu kemarin.",
+      buru: "Tidak ada ancaman atau batas waktu.",
+      minta: "Tidak meminta data, kode, atau uang. Kamu hanya diberi tahu status pesanan."
+    },
+    actions: [
+      { label: "Buka aplikasi Pasar Rimbun dan cek halaman Pesanan", correct: true, why: "Kamu mengecek langsung di aplikasi resmi." },
+      { label: "Laporkan sebagai penipuan", correct: false, why: "Tidak ada tanda bahaya di sini. Melaporkan pesan asli membuatmu melewatkan info penting." },
+      { label: "Cari nomor CS Pasar Rimbun di media sosial untuk memastikan", correct: false, why: "Tidak perlu, dan berisiko: banyak akun CS palsu di media sosial. Kalau ragu, cek langsung di aplikasi resmi." }
+    ],
+    takeaway: "Pesan asli biasanya tidak memaksa dan tidak meminta apa pun. Kalau ragu, cek langsung di aplikasi resmi, bukan lewat link atau nomor dari pesan."
   },
   {
     id: "paket-tertahan",
@@ -207,35 +236,6 @@ const SCENARIOS = [
       { label: "Teruskan kodenya ke grup keluarga supaya tersimpan", correct: false, why: "Kode OTP tidak boleh diteruskan ke siapa pun, termasuk keluarga. Cukup dipakai sekali oleh kamu sendiri." }
     ],
     takeaway: "SMS berisi kode itu normal kalau kamu sendiri yang memintanya. Pakai sendiri, jangan pernah diteruskan."
-  },
-  {
-    id: "pesanan-dikirim",
-    unit: 2,
-    title: "Pesanan dikirim",
-    app: "notif",
-    context: "Kemarin kamu memesan sepatu di aplikasi belanja Pasar Rimbun.",
-    sender: {
-      name: "Pasar Rimbun",
-      detail: "Notifikasi dari aplikasi Pasar Rimbun yang kamu install sendiri dari toko aplikasi resmi."
-    },
-    subject: "Pesananmu sedang dikirim",
-    messages: [
-      ["Pesanan #PR-20817 (sepatu) sudah diserahkan ke kurir. Estimasi tiba Jumat, 6 Nov. Lacak di halaman Pesanan."]
-    ],
-    flags: [],
-    verdict: "Ini pesan asli. Datang dari aplikasi resmi, cocok dengan pesananmu, tanpa link, dan tidak meminta apa pun.",
-    evidence: {},
-    clear: {
-      siapa: "Datang dari aplikasi resmi yang kamu install sendiri, dan cocok dengan pesananmu kemarin.",
-      buru: "Tidak ada ancaman atau batas waktu.",
-      minta: "Tidak meminta data, kode, atau uang. Kamu hanya diberi tahu status pesanan."
-    },
-    actions: [
-      { label: "Buka aplikasi Pasar Rimbun dan cek halaman Pesanan", correct: true, why: "Kamu mengecek langsung di aplikasi resmi." },
-      { label: "Laporkan sebagai penipuan", correct: false, why: "Tidak ada tanda bahaya di sini. Melaporkan pesan asli membuatmu melewatkan info penting." },
-      { label: "Cari nomor CS Pasar Rimbun di media sosial untuk memastikan", correct: false, why: "Tidak perlu, dan berisiko: banyak akun CS palsu di media sosial. Kalau ragu, cek langsung di aplikasi resmi." }
-    ],
-    takeaway: "Pesan asli biasanya tidak memaksa dan tidak meminta apa pun. Kalau ragu, cek langsung di aplikasi resmi, bukan lewat link atau nomor dari pesan."
   }
 ];
 

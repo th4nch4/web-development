@@ -1,9 +1,10 @@
-// Mesin pelajaran: Periksa -> Tanda bahaya -> Tindakan -> Selesai.
+// Mesin pelajaran: Tanda bahaya (soal tampil bersama HP; kotak biru boleh diketuk untuk memeriksa) -> Tindakan -> Selesai.
 (() => {
   const { el, renderCoach } = CekUI;
   const { NO_FLAGS } = CekLogic;
-  const TOTAL_STEPS = 3;
+  const TOTAL_STEPS = 2;
   const COOLDOWN_MS = 500;
+  const FRAME_ALLOWANCE = 16; // bingkai dan tombol samping HP yang menonjol keluar kotaknya
   const storage = CekUI.getStorage();
   const scenario = SCENARIOS.find((s) => s.id === new URLSearchParams(location.search).get("s"));
   const questionById = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
@@ -25,7 +26,7 @@
   let phone = null;
   let primaryAction = null;
   let cooldownTimer = null;
-  let state = { step: "inspect", inspected: 0, selected: [], actionIndex: null, flagResult: null, actionResult: null };
+  let state = { selected: [], actionIndex: null, flagResult: null, actionResult: null };
 
   function setState(patch) {
     state = { ...state, ...patch };
@@ -62,31 +63,33 @@
 
   // Lembar bawah sengaja ringkas; penjelasan rinci muncul di bawah tiap pilihan.
   function showFeedback(tone, heading, text) {
+    dom.lesson.classList.add("is-graded");
     dom.footer.className = `lesson-footer is-${tone}`;
-    dom.feedback.replaceChildren(el("h2", { text: heading }), el("p", { text }));
+    dom.feedback.replaceChildren(el("h2", {}, [CekUI.icon(tone === "good" ? "check" : "alert"), heading]), el("p", { text }));
   }
 
   function hideFeedback() {
+    dom.lesson.classList.remove("is-graded");
     dom.footer.className = "lesson-footer";
     dom.feedback.replaceChildren();
   }
 
-  function renderTask(title, subtitle, options, label) {
+  // layout "chips": kotak ikon kecil yang muat dalam satu layar HP.
+  function renderTask(title, subtitle, options, label, layout) {
     const heading = el("h2", { className: "task-title", tabindex: "-1", text: title });
     dom.task.replaceChildren(
       heading,
       el("p", { className: "task-sub", text: subtitle }),
-      el("div", { className: "options", role: "group", "aria-label": label }, options)
+      el("div", { className: layout ? `options options-${layout}` : "options", role: "group", "aria-label": label }, options)
     );
     // Pindahkan fokus ke soal baru supaya pengguna keyboard/pembaca layar tidak tersesat.
     heading.focus({ preventScroll: true });
-    // Di layar HP, soal ada di bawah HP simulasi, jadi gulir ke soal.
-    if (window.matchMedia("(max-width: 859px)").matches) dom.task.scrollIntoView({ block: "start" });
   }
 
-  function optionButton(id, title, hint, onClick, kind) {
+  function optionButton(id, title, hint, onClick, kind, iconId) {
     return el("button", { type: "button", className: "option", "data-id": id, "aria-pressed": "false", onClick }, [
       el("span", { className: `option-${kind}`, "aria-hidden": "true" }),
+      iconId && CekUI.questionIcon(iconId),
       el("span", { className: "option-text" }, [el("strong", { text: title }), hint && el("small", { text: hint })])
     ]);
   }
@@ -99,7 +102,8 @@
 
   // Kunci pilihan setelah dinilai, beri warna, dan tulis penjelasan di bawah pilihan yang relevan.
   function lockOptions(statusOf, noteOf) {
-    dom.task.querySelector(".task-sub").textContent = "Penjelasannya ada di bawah pilihan yang diberi tanda.";
+    dom.task.querySelector(".task-sub").textContent = "Baca penjelasan di tiap pilihan.";
+    dom.task.querySelector(".options").classList.add("is-graded");
     dom.task.querySelectorAll(".option").forEach((button) => {
       button.disabled = true;
       const status = statusOf(button.dataset.id);
@@ -110,9 +114,20 @@
     });
   }
 
-  // ---------- Langkah 1: periksa ----------
+  // ---------- HP simulasi ----------
 
-  function startInspect() {
+  // Satu soal harus muat satu layar tanpa gulir: HP simulasi diperkecil sampai muat di sisa ruang.
+  // Pakai transform (lewat --fit), bukan zoom: Safari tidak mau mengecilkan huruf di bawah batas minimumnya.
+  function fitPhone() {
+    if (!phone) return;
+    const slot = dom.phoneSlot;
+    const scale = Math.min(1,
+      slot.clientWidth / (phone.offsetWidth + FRAME_ALLOWANCE),
+      slot.clientHeight / (phone.offsetHeight + FRAME_ALLOWANCE));
+    phone.style.setProperty("--fit", String(scale));
+  }
+
+  function showPhone() {
     if (scenario.context) {
       dom.context.textContent = `Situasi: ${scenario.context}`;
       dom.context.hidden = false;
@@ -120,39 +135,40 @@
     phone = CekPhone.render(scenario, onInspect);
     phone.classList.add("is-inspecting");
     dom.phoneSlot.replaceChildren(phone);
-    renderCoach(dom.coach, "Ada pesan masuk. Ketuk bagian yang bergaris putus-putus untuk memeriksanya.", "think");
-    setProgress(0);
-    setPrimary("Lanjut", false, startFlags);
+    // Ruang untuk HP berubah saat soal, umpan balik, atau ukuran layar berganti.
+    new ResizeObserver(fitPhone).observe(dom.phoneSlot);
+    document.fonts.ready.then(fitPhone);
   }
 
+  // Kotak biru boleh diketuk kapan saja untuk melihat faktanya; tidak wajib sebelum menjawab.
   function onInspect(item, button) {
     button.classList.add("is-inspected");
+    const close = () => {
+      dom.inspect.replaceChildren();
+      button.focus();
+    };
     dom.inspect.replaceChildren(el("div", { className: "inspect-card" }, [
-      el("span", { className: "inspect-kind", text: `Hasil periksa · ${item.title}` }),
-      el("strong", { className: "inspect-label", text: item.label }),
-      el("p", { text: item.detail })
+      el("span", { className: "inspect-lens" }, CekUI.icon("lens")),
+      el("div", {}, [
+        el("span", { className: "inspect-kind", text: `Hasil periksa · ${item.title}` }),
+        el("strong", { className: "inspect-label", text: item.label }),
+        el("p", { text: item.detail })
+      ]),
+      el("button", { type: "button", className: "icon-btn inspect-close", "aria-label": "Tutup hasil periksa", onClick: close }, CekUI.icon("close"))
     ]));
-    if (state.step !== "inspect") return;
-    if (state.inspected === 0) {
-      renderCoach(dom.coach, "Bagus! Periksa bagian lain juga, lalu tekan Lanjut.", "happy");
-      setPrimary("Lanjut", true, startFlags);
-    }
-    setState({ inspected: state.inspected + 1 });
-    if (window.matchMedia("(max-width: 859px)").matches) dom.inspect.scrollIntoView({ block: "nearest" });
   }
 
-  // ---------- Langkah 2: tanda bahaya ----------
+  // ---------- Langkah 1: tanda bahaya (soal langsung tampil bersama HP) ----------
 
   function startFlags() {
-    setState({ step: "flags" });
-    phone.classList.remove("is-inspecting");
-    setProgress(1);
-    renderCoach(dom.coach, "Ingat lagi isi pesannya. Kamu boleh gulir ke atas untuk melihatnya.", "think");
+    showPhone();
+    setProgress(0);
+    renderCoach(dom.coach, "Periksa dulu pesannya, baru jawab.", "think");
     const options = [
-      ...QUESTIONS.map((q) => optionButton(q.id, q.title, q.hint, () => toggleFlag(q.id), "check")),
-      optionButton(NO_FLAGS, "Tidak ada tanda bahaya", "Pesan ini terlihat wajar.", () => toggleFlag(NO_FLAGS), "check")
+      ...QUESTIONS.map((q) => optionButton(q.id, q.title, null, () => toggleFlag(q.id), "check", q.id)),
+      optionButton(NO_FLAGS, "Tidak ada tanda bahaya", null, () => toggleFlag(NO_FLAGS), "check", "check")
     ];
-    renderTask("Tanda bahaya apa yang kamu temukan?", "Pilih semua yang cocok.", options, "Tanda bahaya");
+    renderTask("Tanda bahaya apa yang kamu temukan?", "Ketuk kotak biru untuk memeriksa. Pilih semua yang cocok.", options, "Tanda bahaya", "chips");
     setPrimary("Periksa", false, checkFlags);
   }
 
@@ -197,19 +213,23 @@
     const result = CekLogic.gradeFlags(scenario, state.selected);
     const tone = result.allCorrect ? "good" : "bad";
     setState({ flagResult: result });
+    phone.classList.remove("is-inspecting");
+    dom.inspect.replaceChildren();
     CekPhone.highlight(phone, result);
     lockOptions((id) => flagStatus(id, result), flagNote);
-    setProgress(2);
-    renderCoach(dom.coach, result.allCorrect ? "Mantap, matamu jeli!" : "Tidak apa-apa. Justru di sini kita belajar.", result.allCorrect ? "happy" : "oops");
+    if (!isGenuine) {
+      dom.task.querySelector(".task-sub").textContent = "Di pesan: garis penuh = ketemu, putus-putus = terlewat.";
+    }
+    setProgress(1);
+    renderCoach(dom.coach, result.allCorrect ? "Mantap, matamu jeli!" : "Tidak apa-apa, di sini kita belajar.", result.allCorrect ? "happy" : "oops");
     showFeedback(tone, flagHeading(result), scenario.verdict);
     setPrimary("Lanjut", true, startAction, tone);
   }
 
-  // ---------- Langkah 3: tindakan ----------
+  // ---------- Langkah 2: tindakan ----------
 
   function startAction() {
     hideFeedback();
-    setState({ step: "action" });
     renderCoach(dom.coach, "Sekarang putuskan tindakanmu.", "think");
     const options = scenario.actions.map((action, index) =>
       optionButton(String(index), action.label, null, () => chooseAction(index), "radio"));
@@ -233,7 +253,7 @@
       if (index === state.actionIndex) return result.correct ? "correct" : "wrong";
       return !result.correct && scenario.actions[index].correct ? "answer" : "";
     }, (id, status) => (status === "answer" ? scenario.actions[Number(id)].why : ""));
-    setProgress(3);
+    setProgress(2);
     renderCoach(dom.coach, result.correct ? "Keputusan yang aman!" : "Hampir. Lihat pilihan yang lebih aman, ya.", result.correct ? "happy" : "oops");
     showFeedback(tone, result.correct ? "Tindakan yang tepat!" : "Kurang tepat.", chosen.why);
     setPrimary("Selesai", true, finish, tone);
@@ -247,7 +267,7 @@
       ? (flagResult.allCorrect ? "Dikenali" : "Keliru")
       : `${flagResult.found.length}/${scenario.flags.length}`;
     return el("section", { className: "done", "aria-labelledby": "done-title" }, [
-      CekUI.mascot("happy"),
+      CekUI.mascot(flagResult.allCorrect && actionResult.correct ? "happy" : "think"),
       el("h1", { id: "done-title", text: "Pelajaran selesai!" }),
       el("div", { className: "stats" }, [
         CekUI.stat("XP didapat", `+${xp}`),
@@ -265,8 +285,12 @@
     const after = CekLogic.recordLesson(before, scenario.id, state.flagResult, state.actionResult);
     const saved = CekLogic.saveProgress(storage, after);
     dom.lesson.classList.add("is-done");
+    dom.footer.classList.add("is-done");
     dom.lesson.replaceChildren(doneScreen(after.xp - before.xp, saved));
-    setPrimary("Lanjut", true, () => { location.href = "index.html"; });
+    // Langsung ke pelajaran berikutnya (tanpa mampir ke peta); setelah yang terakhir, ke rapor.
+    const next = SCENARIOS[CekLogic.currentIndex(SCENARIOS, after)];
+    const nextUrl = next ? `simulator.html?s=${encodeURIComponent(next.id)}` : "rapor.html";
+    setPrimary(next ? "Pelajaran berikutnya" : "Lihat rapor", true, () => { location.href = nextUrl; });
     window.scrollTo(0, 0);
     dom.primary.focus();
   }
@@ -281,6 +305,6 @@
     setPrimary("Ke jalur belajar", true, () => { location.href = "index.html"; });
   }
 
-  if (scenario) startInspect();
+  if (scenario) startFlags();
   else showMissing();
 })();

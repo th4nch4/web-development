@@ -146,3 +146,34 @@ test("saveProgress mengembalikan false kalau penyimpanan menolak", () => {
   assert.equal(CekLogic.saveProgress(broken, CekLogic.emptyProgress()), false);
   assert.equal(CekLogic.saveProgress(null, CekLogic.emptyProgress()), false);
 });
+
+const ids = ["siapa", "file", "minta"];
+
+test("doubtVerdict: satu jawaban 'ya' sudah cukup untuk berbahaya, walau belum semua dijawab", () => {
+  const verdict = CekLogic.doubtVerdict(ids, { file: "ya" });
+  assert.equal(verdict.level, "danger");
+  assert.deepEqual(verdict.yes, ["file"]);
+});
+
+test("doubtVerdict: tanpa 'ya', pertanyaan yang belum dijawab membuat hasil belum lengkap", () => {
+  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak" });
+  assert.equal(verdict.level, "incomplete");
+  assert.equal(verdict.remaining, 2);
+});
+
+test("doubtVerdict: 'tidak yakin' tidak pernah dianggap aman", () => {
+  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak", file: "ragu", minta: "tidak" });
+  assert.equal(verdict.level, "unsure");
+  assert.deepEqual(verdict.unsure, ["file"]);
+});
+
+test("doubtVerdict: semua 'tidak' berarti tidak ketemu tanda, bukan aman", () => {
+  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak", file: "tidak", minta: "tidak" });
+  assert.equal(verdict.level, "none-found");
+});
+
+test("doubtVerdict: jawaban yang tidak dikenal dihitung belum dijawab", () => {
+  const verdict = CekLogic.doubtVerdict(ids, { siapa: "tidak", file: "mungkin", minta: "tidak", lain: "ya" });
+  assert.equal(verdict.level, "incomplete");
+  assert.equal(verdict.remaining, 1);
+});

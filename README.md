@@ -16,17 +16,30 @@ Klik dua kali `index.html`, atau pakai Live Server di VS Code. Tidak perlu insta
 
 | File | Isi | Pemegang |
 |---|---|---|
-| `index.html` + `js/path.js` | Jalur belajar (peta pelajaran) | Ketua |
+| `index.html` + `js/path.js` | Beranda: jalur belajar (peta pelajaran) | Ketua |
+| `ragu.html` + `js/ragu.js` | "Lagi Ragu?": 5 pertanyaan ya/tidak untuk pesan nyata, tidak pernah bilang "aman" | Anggota 4 |
+| `telanjur.html` | "Sudah Telanjur?": langkah darurat dan kontak resmi (diperiksa 30 Okt 2026) | Anggota 4 |
 | `simulator.html` + `js/engine.js` | Mesin pelajaran: Periksa → Tanda bahaya → Tindakan | Ketua |
-| `js/phone.js` | Menggambar HP simulasi (chat, SMS, email, notifikasi) | Ketua |
+| `js/phone.js` | Menggambar HP simulasi bergaya iPhone (chat ala WhatsApp, SMS, email, layar kunci) | Ketua |
 | `rapor.html` + `js/report.js` | Rapor hasil belajar | Ketua |
 | `js/logic.js` | Penilaian, XP, rapor, penyimpanan (tanpa tampilan, ada tesnya) | Ketua |
 | `js/scenarios.js` | **Isi semua skenario** | Konten |
 | `js/questions.js` | 5 Pertanyaan Sebelum Klik | Konten |
 | `css/style.css` | Semua tampilan | Tampilan |
-| `js/ui.js` | Bantuan tampilan: elemen, ikon, maskot Lupi | Tampilan |
+| `js/ui.js` | Bantuan tampilan: elemen, ikon (termasuk ikon 5 Pertanyaan), maskot Lupi | Tampilan |
+| `js/theme.js` | Tampilan Sistem/Terang/Gelap (bawaan: Sistem) dan tombol pengaturan ⚙ | Tampilan |
+| `img/` | Wallpaper alam buatan sendiri (SVG, hanya warna palet, bebas hak cipta) | Tampilan |
+| `fonts/` | Huruf judul Bricolage Grotesque (lisensi OFL di `fonts/OFL.txt`), disimpan lokal tanpa CDN | Tampilan |
 
-Halaman "Lagi Ragu?" dan "Sudah Telanjur?" belum dibuat (bagian Anggota 4, lihat `docs/`).
+"Lagi Ragu?" dan "Sudah Telanjur?" sudah ada versi pertamanya. Kalau mengubah kontak resmi di
+`telanjur.html`, cocokkan dulu dengan situs resmi lembaganya dan perbarui tanggal pemeriksaannya.
+
+## Warna
+
+Seluruh website hanya memakai 5 warna palet ini (ada di bagian atas `css/style.css`):
+Seashell `#FFF4EB`, Wheat `#F6E0B6`, Powder Blue `#A6BCC9`, French Blue `#3E4B8E`, Midnight Violet `#3D1534`.
+Jangan menambah warna lain tanpa persetujuan ketua. Pakai variabel CSS (`var(--french)` dll.), bukan kode hex baru.
+Satu pengecualian yang sudah disetujui: mode gelap memakai latar abu-abu gelap (`--charcoal`, `--graphite`, `--slate`), bukan ungu.
 
 ## Menambah atau mengedit skenario
 
@@ -40,8 +53,8 @@ Halaman "Lagi Ragu?" dan "Sudah Telanjur?" belum dibuat (bagian Anggota 4, lihat
 
 ```bash
 node --test                      # logika + pemeriksaan isi skenario (butuh Node.js)
-python tests/e2e_flow.py         # main semua pelajaran di browser (butuh Python + Playwright)
+python tests/e2e_flow.py         # main semua pelajaran + halaman bantuan di browser (butuh Python + Playwright)
 ```
 
 Tes E2E juga memastikan tidak ada error JavaScript, tidak ada permintaan jaringan keluar,
-dan klik ganda tidak melompati umpan balik.
+klik ganda tidak melompati umpan balik, dan "Lagi Ragu?" tidak pernah menyimpulkan "aman".

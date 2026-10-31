@@ -100,6 +100,25 @@ const CekLogic = (() => {
     };
   }
 
+  /**
+   * Hasil halaman "Lagi Ragu?". Sengaja tidak pernah menyimpulkan "aman":
+   * paling jauh "tidak ketemu tanda" dari 5 pertanyaan.
+   * @param {string[]} questionIds
+   * @param {Object<string, string>} answers  id pertanyaan -> "ya" | "tidak" | "ragu"
+   * @returns {{ level: "danger"|"incomplete"|"unsure"|"none-found", yes: string[], unsure: string[], remaining: number }}
+   */
+  function doubtVerdict(questionIds, answers) {
+    const answered = (value) => (id) => answers[id] === value;
+    const yes = questionIds.filter(answered("ya"));
+    const unsure = questionIds.filter(answered("ragu"));
+    const remaining = questionIds.length - yes.length - unsure.length - questionIds.filter(answered("tidak")).length;
+    let level = "none-found";
+    if (yes.length > 0) level = "danger";
+    else if (remaining > 0) level = "incomplete";
+    else if (unsure.length > 0) level = "unsure";
+    return { level, yes, unsure, remaining };
+  }
+
   function isValidLesson(lesson) {
     return Boolean(lesson)
       && Array.isArray(lesson.found)
@@ -159,6 +178,7 @@ const CekLogic = (() => {
     isUnlocked,
     currentIndex,
     buildReport,
+    doubtVerdict,
     loadProgress,
     saveProgress,
     clearProgress

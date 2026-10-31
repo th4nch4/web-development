@@ -13,8 +13,11 @@
     ]);
   }
 
+  const MAX_FOCUS = 2; // lebih dari ini bukan fokus lagi, cukup lihat daftar di bawah
+
   function focusCard() {
     const weak = report.needsPractice;
+    if (weak.length > MAX_FOCUS) return null;
     if (weak.length === 0) {
       return el("div", { className: "callout callout-good" }, [
         el("strong", { text: "Tidak ada tanda yang terlewat." }),
@@ -37,12 +40,15 @@
       ? "Belum muncul di pelajaran yang kamu selesaikan."
       : `Ditemukan ${q.found} dari ${seen} kali`;
     return el("li", { className: "q-row" }, [
-      el("div", { className: "q-head" }, [
-        el("strong", { text: q.title }),
-        el("span", { className: "q-count", text: summary })
-      ]),
-      seen > 0 && el("div", { className: "meter", "aria-hidden": "true" }, [
-        el("span", { style: `width: ${(q.found / seen) * 100}%` })
+      CekUI.questionIcon(q.id),
+      el("div", {}, [
+        el("div", { className: "q-head" }, [
+          el("strong", { text: q.title }),
+          el("span", { className: "q-count", text: summary })
+        ]),
+        seen > 0 && el("div", { className: "meter", "aria-hidden": "true" }, [
+          el("span", { style: `width: ${(q.found / seen) * 100}%` })
+        ])
       ])
     ]);
   }

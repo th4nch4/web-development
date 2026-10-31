@@ -8,9 +8,9 @@
   const doneCount = SCENARIOS.filter((s) => CekLogic.isDone(progress, s.id)).length;
 
   function coachText() {
-    if (doneCount === 0) return "Halo, aku Lupi! Ayo latihan memeriksa pesan sebelum klik. Mulai dari pelajaran pertama, ya.";
-    if (current === -1) return "Semua pelajaran selesai! Buka rapormu untuk melihat pertanyaan mana yang paling sering terlewat.";
-    return `Mantap, ${doneCount} dari ${SCENARIOS.length} pelajaran selesai. Lanjut ke "${SCENARIOS[current].title}"?`;
+    if (doneCount === 0) return "Halo, aku Lupi! Yuk mulai dari pelajaran pertama.";
+    if (current === -1) return "Semua selesai! Cek rapormu.";
+    return `Mantap, ${doneCount} dari ${SCENARIOS.length} selesai!`;
   }
 
   function pathItem(node, label, position, badge) {
@@ -27,7 +27,7 @@
   function lessonNode(scenario, index) {
     const done = CekLogic.isDone(progress, scenario.id);
     const name = `Pelajaran ${index + 1}: ${scenario.title}`;
-    const node = CekLogic.isUnlocked(SCENARIOS, progress, index)
+    const node = done || CekLogic.isUnlocked(SCENARIOS, progress, index)
       ? el("a", {
         className: done ? "node node-done" : "node node-current",
         href: `simulator.html?s=${encodeURIComponent(scenario.id)}`,
@@ -44,10 +44,7 @@
       .filter(({ scenario }) => scenario.unit === unit.id)
       .map(({ scenario, index }) => lessonNode(scenario, index));
     return el("section", { className: `unit unit-${unit.id}`, "aria-label": `${unit.title}: ${unit.subtitle}` }, [
-      el("div", { className: "unit-banner" }, [
-        el("p", { className: "unit-kicker", text: unit.title }),
-        el("h2", { text: unit.subtitle })
-      ]),
+      el("div", { className: "unit-banner" }, [el("h2", { text: unit.subtitle })]),
       el("ol", { className: "path" }, items)
     ]);
   }
@@ -74,8 +71,6 @@
   document.getElementById("xp").replaceChildren(CekUI.xpChip(progress.xp));
   CekUI.renderCoach(document.getElementById("coach"), coachText(), "happy");
   document.getElementById("units").replaceChildren(...UNITS.map(unitSection), reportPath());
-  document.getElementById("recap-list").replaceChildren(...QUESTIONS.map((q) =>
-    el("li", {}, [el("strong", { text: q.title }), el("span", { text: q.hint })])));
   document.getElementById("storage-note").hidden = Boolean(storage);
   setupReset();
 })();

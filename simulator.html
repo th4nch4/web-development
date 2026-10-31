@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no"> <!-- iPhone: nomor fiktif tidak jadi link telepon -->
   <title>Pelajaran · CekDulu</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
 </head>
 <body class="lesson-page">
   <header class="lesson-top">
     <a class="icon-btn" href="index.html" aria-label="Keluar dari pelajaran">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
     </a>
-    <div class="progress" id="progress" role="progressbar" aria-label="Kemajuan pelajaran" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span></span></div>
+    <div class="progress" id="progress" role="progressbar" aria-label="Kemajuan pelajaran" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0"><span></span></div>
   </header>
 
   <main class="lesson-main" id="lesson">

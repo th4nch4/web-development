@@ -30,7 +30,7 @@ const CekPhone = (() => {
     return el("span", { className: "evidence", "data-flag": part.flag }, part.text);
   }
 
-  function paragraphs(scenario, tap, className) {
+  function scenarioBubbles(scenario, tap, className) {
     return scenario.messages.map((bubble) => el("p", { className }, bubble.map((part) => segment(part, tap))));
   }
 
@@ -39,51 +39,83 @@ const CekPhone = (() => {
     return tap("sender", sender.name, sender.detail, sender.flag, "tap-sender", sender.name);
   }
 
+  const TIME = "09.41";
+  const glyph = (name, className) => el("span", { className: `glyph ${className || ""}`, "aria-hidden": "true" }, CekUI.icon(name));
+
+  // Jam kecil di pojok gelembung, seperti di WhatsApp.
+  function withMeta(bubble) {
+    bubble.append(el("span", { className: "meta", "aria-hidden": "true", text: TIME }));
+    return bubble;
+  }
+
+  // Tampilan WhatsApp di iPhone: header terang, wallpaper bermotif, gelembung berekor, bar ketik.
   function renderChat(s, tap) {
-    const file = s.attachment && el("div", { className: "bubble bubble-file" }, [
+    const file = s.attachment && withMeta(el("div", { className: "bubble bubble-file" }, [
       tap("attachment", s.attachment.name, s.attachment.detail, s.attachment.flag, "tap-file", [
         el("span", { className: "file-icon", "aria-hidden": "true", text: fileExtension(s.attachment.name) }),
         el("span", { className: "file-meta" }, [
           el("strong", { text: s.attachment.name }),
-          el("small", { text: s.attachment.size })
+          el("small", { text: `${s.attachment.size} · ${fileExtension(s.attachment.name)}` })
         ])
       ])
-    ]);
+    ]));
     return [
       el("div", { className: "app-header chat-header" }, [
+        glyph("chevron", "chat-back"),
         el("span", { className: "avatar", "aria-hidden": "true", text: initial(s.sender.name) }),
-        senderTap(s, tap)
+        el("div", { className: "chat-title" }, [
+          senderTap(s, tap),
+          el("small", { "aria-hidden": "true", text: "ketuk untuk info kontak" })
+        ]),
+        glyph("video", "chat-action"),
+        glyph("phone", "chat-action")
       ]),
       el("div", { className: "app-body chat-body" }, [
+        el("p", { className: "date-chip", "aria-hidden": "true", text: "Hari ini" }),
         s.notice && el("p", { className: "system-notice", text: s.notice }),
-        ...paragraphs(s, tap, "bubble"),
+        ...scenarioBubbles(s, tap, "bubble").map((bubble) => withMeta(bubble)),
         file
       ]),
-      el("div", { className: "chat-input", "aria-hidden": "true", text: "Ketik pesan" })
+      el("div", { className: "chat-input", "aria-hidden": "true" }, [
+        glyph("plus"),
+        el("span", { className: "chat-field" }, ["Ketik pesan", glyph("sticker")]),
+        glyph("camera"),
+        glyph("mic")
+      ])
     ];
   }
 
+  // Tampilan Pesan (SMS) di iPhone: nama di tengah, gelembung abu berekor.
   function renderSms(s, tap) {
     return [
       el("div", { className: "app-header sms-header" }, [
-        el("span", { className: "avatar", "aria-hidden": "true", text: initial(s.sender.name) }),
-        senderTap(s, tap),
-        el("small", { className: "app-tag", text: "SMS" })
+        glyph("chevron", "chat-back"),
+        el("div", { className: "sms-contact" }, [
+          el("span", { className: "avatar", "aria-hidden": "true", text: initial(s.sender.name) }),
+          senderTap(s, tap)
+        ])
       ]),
-      el("div", { className: "app-body sms-body" }, paragraphs(s, tap, "bubble"))
+      el("div", { className: "app-body sms-body" }, [
+        el("p", { className: "sms-stamp", "aria-hidden": "true" }, [el("strong", { text: "Pesan Teks" }), ` · Hari ini ${TIME}`]),
+        ...scenarioBubbles(s, tap, "bubble")
+      ]),
+      el("div", { className: "chat-input sms-input", "aria-hidden": "true" }, [
+        glyph("plus"),
+        el("span", { className: "chat-field", text: "Pesan Teks" })
+      ])
     ];
   }
 
   function renderEmail(s, tap) {
     return [
-      el("div", { className: "app-header email-header", text: "Kotak masuk" }),
+      el("div", { className: "app-header email-header" }, [glyph("chevron", "chat-back"), "Kotak Masuk"]),
       el("div", { className: "app-body email-body" }, [
         el("h3", { className: "email-subject", text: s.subject }),
         el("div", { className: "email-from" }, [
           el("span", { className: "avatar", "aria-hidden": "true", text: initial(s.sender.name) }),
           el("div", {}, [senderTap(s, tap), el("small", { text: "kepada saya" })])
         ]),
-        ...paragraphs(s, tap, "email-paragraph")
+        ...scenarioBubbles(s, tap, "email-paragraph")
       ])
     ];
   }
@@ -91,7 +123,7 @@ const CekPhone = (() => {
   function renderNotif(s, tap) {
     return [
       el("div", { className: "lock-screen" }, [
-        el("p", { className: "lock-time", text: "09.41" }),
+        el("p", { className: "lock-time", text: TIME }),
         el("p", { className: "lock-date", text: "Kamis, 5 November" }),
         el("div", { className: "notif-card" }, [
           el("div", { className: "notif-top" }, [
@@ -100,7 +132,7 @@ const CekPhone = (() => {
             el("small", { text: "sekarang" })
           ]),
           el("strong", { className: "notif-title", text: s.subject }),
-          ...paragraphs(s, tap, "notif-text")
+          ...scenarioBubbles(s, tap, "notif-text")
         ])
       ])
     ];
@@ -117,15 +149,16 @@ const CekPhone = (() => {
     return el("div", { className: `phone phone-${scenario.app}`, role: "group", "aria-label": "HP simulasi" }, [
       el("div", { className: "screen" }, [
         el("div", { className: "status-bar", "aria-hidden": "true" }, [
-          el("span", { text: "09.41" }),
-          el("span", { className: "battery" })
+          el("span", { className: "status-time", text: TIME }),
+          el("span", { className: "island" }),
+          el("span", { className: "status-icons" }, [CekUI.icon("signal"), CekUI.icon("wifi"), el("span", { className: "battery" })])
         ]),
         ...RENDERERS[scenario.app](scenario, tap)
       ])
     ]);
   }
 
-  // Setelah pemain menjawab: hijau = tanda yang ditemukan, merah = tanda yang terlewat.
+  // Setelah pemain menjawab: mark-found = tanda yang ditemukan, mark-missed = tanda yang terlewat.
   function highlight(phone, flagResult) {
     phone.querySelectorAll("[data-flag]").forEach((node) => {
       const flag = node.getAttribute("data-flag");

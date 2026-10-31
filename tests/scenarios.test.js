@@ -19,7 +19,7 @@ test("ada 5 pertanyaan dengan id unik", () => {
   assert.equal(QUESTIONS.length, 5);
   assert.equal(new Set(QUESTION_IDS).size, 5);
   QUESTIONS.forEach((q) => {
-    assert.ok(q.title && q.hint && q.clear, `pertanyaan ${q.id} belum lengkap`);
+    assert.ok(q.title && q.hint && q.clear && q.ask, `pertanyaan ${q.id} belum lengkap`);
   });
 });
 

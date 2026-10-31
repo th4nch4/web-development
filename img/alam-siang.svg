@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 860" preserveAspectRatio="xMidYMid slice">
+  <!-- Wallpaper chat: pegunungan dan danau di siang hari. Digambar sendiri untuk CekDulu, hanya 5 warna palet. -->
+  <rect width="400" height="860" fill="#A6BCC9"/>
+  <circle cx="292" cy="190" r="58" fill="#F6E0B6"/>
+  <path d="M40 150c14-22 50-24 64-4 20-10 46 2 46 22H40z" fill="#FFF4EB"/>
+  <path d="M220 96c12-18 42-20 54-3 17-8 38 2 38 18h-92z" fill="#FFF4EB"/>
+  <path d="M0 470l70-120 52 62 78-150 92 134 46-52 62 96v150H0z" fill="#3E4B8E"/>
+  <path d="M180 312l20-50 20 40-14-6-12 18z" fill="#FFF4EB"/>
+  <path d="M0 560l60-70 70 52 90-96 100 108 80-60v156H0z" fill="#3D1534"/>
+  <rect y="600" width="400" height="120" fill="#A6BCC9"/>
+  <path d="M40 630h90M170 648h120M60 672h70M230 690h110M120 706h60" stroke="#FFF4EB" stroke-width="5" stroke-linecap="round"/>
+  <path d="M0 720c60-30 130-28 200-6s140 22 200-4v150H0z" fill="#F6E0B6"/>
+  <path d="M0 780c80-24 160-20 240 0s120 16 160 4v76H0z" fill="#3E4B8E"/>
+  <path d="M48 770v-26M60 772v-34M72 770v-22M330 774v-30M342 776v-38M354 774v-24" stroke="#3D1534" stroke-width="5" stroke-linecap="round"/>
+</svg>
