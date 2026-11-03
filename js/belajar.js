@@ -60,7 +60,6 @@
   function choose(index) {
     setState({ choice: index });
     kit.syncPressed([String(index)]);
-    kit.bump(dom.task.querySelector(`[data-id="${index}"]`));
     kit.setPrimary("Periksa", true, checkQuiz);
   }
 
@@ -73,7 +72,7 @@
       const index = Number(id);
       if (index === state.choice) return isRight ? "correct" : "wrong";
       return !isRight && step.options[index].correct ? "answer" : "";
-    }, (id, status) => (status === "answer" ? step.options[Number(id)].why : ""));
+    }, (id, status) => (status === "answer" ? step.options[Number(id)].why : ""), { answer: "Jawabannya", wrong: "Pilihanmu" });
     CekKit.setProgress(dom.progress, state.step + 1, steps.length);
     kit.setMood(isRight);
     kit.showFeedback(isRight ? "good" : "bad", isRight ? "Betul!" : "Belum tepat.", chosen.why, isRight ? CekLogic.XP_MATERI : 0);
@@ -87,7 +86,6 @@
     const after = CekLogic.recordMateri(before, materi.id, state.right);
     const saved = CekLogic.saveProgress(storage, after);
     const perfect = state.right === quizCount;
-    CekSound.play("done");
     CekKit.setProgress(dom.progress, steps.length, steps.length);
     dom.lesson.classList.add("is-done");
     dom.footer.classList.add("is-done");

@@ -73,7 +73,6 @@ const CekTheme = (() => {
     panel.addEventListener("change", (event) => {
       if (event.target.name === "sound") {
         CekSound.setOn(event.target.value === "on");
-        CekSound.play("tap");
       } else {
         choose(event.target.value);
       }

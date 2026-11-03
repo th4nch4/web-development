@@ -27,6 +27,13 @@ const CekUI = (() => {
     star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="currentColor"/>',
     trophy: '<path d="M7 4h10v4a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 13h4v3h-4zM8 18h8v2.5H8z" fill="currentColor"/>',
     bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/>',
+    // Ikon level di peta beranda (nama sama dengan field icon di js/scenarios.js). Isi penuh, lubang lewat evenodd.
+    invite: '<path fill="currentColor" fill-rule="evenodd" d="M5 5h14a2.5 2.5 0 0 1 2.5 2.5v9A2.5 2.5 0 0 1 19 19H5a2.5 2.5 0 0 1-2.5-2.5v-9A2.5 2.5 0 0 1 5 5zM12 16.5l-3.4-3.2a2.1 2.1 0 0 1 3.4-2.4 2.1 2.1 0 0 1 3.4 2.4z"/>',
+    truck: '<path fill="currentColor" fill-rule="evenodd" d="M1.5 5.5h12.5v10H1.5zM15 8.5h4l3 3.5v3.5h-7zM16.6 10v2.3h3.6L18.3 10z"/><circle cx="6" cy="17.5" r="2.4" fill="currentColor"/><circle cx="18" cy="17.5" r="2.4" fill="currentColor"/>',
+    box: '<path fill="currentColor" d="M12 2.5l8.5 4.3L12 11 3.5 6.8zM2.8 8.3l8.3 4.1V21.5l-8.3-4.2zM21.2 8.3l-8.3 4.1V21.5l8.3-4.2z"/>',
+    bank: '<path fill="currentColor" d="M12 2.5l9.5 5.5h-19zM4 9.5h3v7.5H4zM10.5 9.5h3v7.5h-3zM17 9.5h3v7.5h-3zM2.5 18.5h19v3h-19z"/>',
+    chat: '<path fill="currentColor" fill-rule="evenodd" d="M5 3.5h14A2.5 2.5 0 0 1 21.5 6v8a2.5 2.5 0 0 1-2.5 2.5h-8l-5 4.5v-4.5H5A2.5 2.5 0 0 1 2.5 14V6A2.5 2.5 0 0 1 5 3.5zM6.6 10a1.4 1.4 0 1 0 2.8 0 1.4 1.4 0 1 0-2.8 0zM10.6 10a1.4 1.4 0 1 0 2.8 0 1.4 1.4 0 1 0-2.8 0zM14.6 10a1.4 1.4 0 1 0 2.8 0 1.4 1.4 0 1 0-2.8 0z"/>',
+    key: '<path fill="currentColor" fill-rule="evenodd" d="M2 12a6 6 0 0 1 11.6-2.2h8.4v4.4h-2v3.3h-3v-3.3h-1.5v2.3h-3v-2.3h-.9A6 6 0 0 1 2 12zM5.5 12a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0z"/>',
     // Garis, satu ketebalan: ikon 5 Pertanyaan Sebelum Klik (id sama dengan QUESTIONS) dan bantuan.
     siapa: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20.5a7 7 0 0 1 14 0"/></g>',
     link: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></g>',

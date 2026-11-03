@@ -18,6 +18,12 @@
   function focusCard() {
     const weak = report.needsPractice;
     if (weak.length > MAX_FOCUS) return null;
+    if (weak.length === 0 && report.findMissed > 0) {
+      return el("div", { className: "callout" }, [
+        el("strong", { text: `${report.findMissed} bagian pesan mencurigakan sempat terlewat.` }),
+        el("p", { text: "Tanda bahayanya sudah kamu kenali, tapi saat membaca pesan masih ada yang kelewat. Ulangi pelajarannya, baca pelan-pelan." })
+      ]);
+    }
     if (weak.length === 0) {
       return el("div", { className: "callout callout-good" }, [
         el("strong", { text: "Tidak ada tanda yang terlewat." }),

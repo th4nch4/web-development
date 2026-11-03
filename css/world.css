@@ -1,0 +1,95 @@
+/* Dunia bertema di peta beranda (js/world.js): panel bergambar per bagian, jalan berliku,
+   hiasan di sisi jalur, bintang level. Hanya warna palet (+ abu gelap untuk mode gelap). */
+
+.world-1 { --w-sky: var(--powder); --w-ground: var(--wheat); --w-road: var(--seashell); --w-road-line: var(--powder); }
+.world-2 { --w-sky: var(--french); --w-ground: var(--seashell); --w-road: var(--powder); --w-road-line: var(--seashell); }
+:root[data-theme="dark"] .world-1 { --w-sky: var(--slate); --w-ground: var(--graphite); --w-road: var(--charcoal); --w-road-line: var(--slate); }
+:root[data-theme="dark"] .world-2 { --w-sky: var(--french); --w-ground: var(--graphite); --w-road: var(--charcoal); --w-road-line: var(--slate); }
+
+.world {
+  --sky-h: 210px;
+  position: relative;
+  padding: 16px 12px 36px;
+  overflow: hidden;
+  background: var(--w-ground);
+  border: 3px solid var(--violet);
+  border-radius: 28px;
+  container-type: inline-size;
+}
+:root[data-theme="dark"] .world { border-color: var(--slate); }
+.world-sky { position: absolute; top: 0; left: 0; right: 0; height: var(--sky-h); background: var(--w-sky); }
+/* Kota setinggi tetap di dasar langit, supaya tidak ikut membesar di layar lebar. */
+.world-sky svg { position: absolute; left: 0; bottom: 0; width: 100%; height: 130px; }
+.world-sky .w-ground { fill: var(--w-ground); }
+
+.world-road { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.world-road path { fill: none; stroke-linecap: round; }
+.world-road .road { stroke: var(--w-road); stroke-width: 26px; }
+.world-road .road-line { stroke: var(--w-road-line); stroke-width: 4px; stroke-dasharray: 2 14; }
+
+.world .unit-banner { position: relative; }
+.world .path { position: relative; margin-top: calc(var(--sky-h) - 86px); }
+
+/* Hiasan di sisi kosong: dihitung dari tengah panel, lalu dikurangi geseran level (--x). */
+.world-prop {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 68px;
+  height: 68px;
+  pointer-events: none;
+  transform: translateX(calc(var(--side) * (50cqi - 46px) - var(--x, 0px) - 50%));
+}
+.world-prop svg { width: 100%; height: 100%; }
+
+/* Label level seperti papan nama, supaya tetap terbaca di atas gambar. */
+.world .node-label {
+  padding: 2px 12px;
+  border-radius: 14px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 2px solid var(--violet);
+}
+:root[data-theme="dark"] .world .node-label { border-color: var(--slate); }
+.world .node-locked + .node-label { color: var(--muted); border-color: var(--line); }
+.world .node-locked { border: 3px solid var(--seashell); }
+:root[data-theme="dark"] .world .node-locked { border-color: var(--graphite); }
+/* Ronde Kilat berwarna wheat: diberi tepi violet, dan di Dunia 1 (tanah wheat) isinya seashell supaya tidak tenggelam. */
+.world .node-quick { border: 3px solid var(--violet); }
+.world-1 .node-quick { background: var(--seashell); }
+:root[data-theme="dark"] .world .node-quick { background: var(--wheat); border-color: var(--graphite); }
+
+/* Level selesai: ikon level + centang kecil, lalu tiga bintang. */
+.node { position: relative; }
+.node-check {
+  position: absolute;
+  right: -4px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--violet);
+  background: var(--wheat);
+  border: 3px solid var(--violet);
+  border-radius: 50%;
+}
+.node-check .icon svg { width: 16px; height: 16px; }
+.stars { display: flex; gap: 2px; margin-top: 10px; margin-bottom: -4px; }
+.star .icon svg { width: 24px; height: 24px; color: var(--seashell); stroke: var(--violet); stroke-width: 1.6px; stroke-linejoin: round; }
+.star.is-on .icon svg { color: var(--brand); }
+.star:nth-child(2) { transform: translateY(-5px); }
+:root[data-theme="dark"] .star .icon svg { color: var(--slate); stroke: var(--charcoal); }
+:root[data-theme="dark"] .star.is-on .icon svg { color: var(--wheat); }
+
+/* Halaman level: latar ikut tanah dunianya; di layar lebar ada hiasan dunia di pinggir kiri-kanan. */
+.world-page { background: var(--w-ground); }
+.world-side { display: none; }
+@media (min-width: 1100px) {
+  .world-side { display: block; position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+  .world-side .world-prop { width: 88px; height: 88px; transform: none; }
+  .world-side .world-prop:nth-child(1) { left: 4vw; top: 20%; }
+  .world-side .world-prop:nth-child(2) { left: auto; right: 4vw; top: 30%; }
+  .world-side .world-prop:nth-child(3) { left: 6vw; top: 56%; }
+  .world-side .world-prop:nth-child(4) { left: auto; right: 6vw; top: 64%; }
+}

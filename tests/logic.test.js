@@ -226,3 +226,26 @@ test("loadProgress menolak skor materi yang bukan angka", () => {
   const storage = fakeStorage({ [CekLogic.STORAGE_KEY]: JSON.stringify({ xp: 1, lessons: {}, materi: { vishing: "x" } }) });
   assert.deepEqual(CekLogic.loadProgress(storage), CekLogic.emptyProgress());
 });
+
+test("recordLesson + buildReport: bagian pesan yang terlewat di soal pertama ikut dihitung", () => {
+  const flags = CekLogic.gradeFlags(scam, ["siapa", "file"]);
+  const find = CekLogic.gradeFind([true, true, false, true], [0]);
+  const after = CekLogic.recordLesson(CekLogic.emptyProgress(), "palsu", flags, { correct: true }, find);
+  assert.equal(after.lessons.palsu.findMissed, 2);
+  const report = CekLogic.buildReport([scam, genuine], questions, after);
+  assert.equal(report.findMissed, 2);
+  assert.deepEqual(report.needsPractice, []);
+});
+
+test("buildReport: progres lama tanpa findMissed dianggap 0", () => {
+  const old = { xp: 10, lessons: { palsu: { found: ["siapa"], missed: [], extra: [], actionCorrect: true, xp: 10 } } };
+  assert.equal(CekLogic.buildReport([scam], questions, old).findMissed, 0);
+});
+
+test("lessonStars: 1 bintang karena selesai, +1 tanda bahaya lengkap, +1 tindakan tepat", () => {
+  const lesson = (missed, extra, actionCorrect) => ({ found: [], missed, extra, actionCorrect });
+  assert.equal(CekLogic.lessonStars(lesson([], [], true)), 3);
+  assert.equal(CekLogic.lessonStars(lesson(["file"], [], true)), 2);
+  assert.equal(CekLogic.lessonStars(lesson([], ["siapa"], false)), 1);
+  assert.equal(CekLogic.lessonStars(undefined), 0);
+});

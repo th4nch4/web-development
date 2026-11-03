@@ -87,14 +87,18 @@ const CekLogic = (() => {
       + (actionResult.correct ? XP_RIGHT_ACTION : 0);
   }
 
-  /** Mengembalikan progres baru; progres lama tidak diubah. */
-  function recordLesson(progress, scenarioId, flagResult, actionResult) {
+  /**
+   * Mengembalikan progres baru; progres lama tidak diubah.
+   * findResult (opsional): hasil soal "Apa yang salah dari pesan ini?"; dicatat sebagai jumlah bagian yang terlewat.
+   */
+  function recordLesson(progress, scenarioId, flagResult, actionResult, findResult) {
     const xp = lessonXp(flagResult, actionResult);
     const lesson = {
       found: flagResult.found,
       missed: flagResult.missed,
       extra: flagResult.extra,
       actionCorrect: actionResult.correct,
+      findMissed: findResult ? findResult.missed.length : 0,
       xp
     };
     return {
@@ -133,6 +137,16 @@ const CekLogic = (() => {
     return Boolean(progress.lessons[scenarioId]);
   }
 
+  /**
+   * Bintang pelajaran untuk peta (0 sampai 3): 1 karena selesai, +1 kalau tanda bahaya lengkap
+   * tanpa salah pilih, +1 kalau tindakannya tepat. 0 kalau belum dimainkan.
+   */
+  function lessonStars(lesson) {
+    if (!lesson) return 0;
+    const flagsPerfect = lesson.missed.length === 0 && lesson.extra.length === 0;
+    return 1 + (flagsPerfect ? 1 : 0) + (lesson.actionCorrect ? 1 : 0);
+  }
+
   // Pelajaran terbuka berurutan: yang pertama selalu terbuka.
   function isUnlocked(scenarios, progress, index) {
     return index === 0 || isDone(progress, scenarios[index - 1].id);
@@ -167,7 +181,9 @@ const CekLogic = (() => {
       perQuestion,
       needsPractice,
       genuineDone: genuine.length,
-      falseAlarms: genuine.filter((s) => progress.lessons[s.id].extra.length > 0).length
+      falseAlarms: genuine.filter((s) => progress.lessons[s.id].extra.length > 0).length,
+      // Progres lama belum punya findMissed: dianggap 0.
+      findMissed: done.reduce((sum, s) => sum + (progress.lessons[s.id].findMissed || 0), 0)
     };
   }
 
@@ -245,6 +261,7 @@ const CekLogic = (() => {
     isQuickUnlocked,
     XP_QUICK,
     isDone,
+    lessonStars,
     isUnlocked,
     currentIndex,
     buildReport,

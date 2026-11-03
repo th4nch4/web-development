@@ -1,14 +1,12 @@
-// Efek suara ala game, dibuat langsung di browser (Web Audio). Tanpa file dan tanpa internet.
+// Efek suara jawaban benar dan salah, dibuat langsung di browser (Web Audio). Tanpa file dan tanpa internet.
+// Sengaja tidak ada suara saat mengetuk pilihan.
 // Bisa dimatikan lewat tombol pengaturan; pilihan disimpan hanya di perangkat ini.
 const CekSound = (() => {
   const KEY = "cekdulu.sound";
   // [frekuensi Hz, mulai detik, lama detik, bentuk gelombang, volume]
   const SOUNDS = {
-    tap: [[880, 0, 0.05, "triangle", 0.06]],
     good: [[523, 0, 0.09, "triangle", 0.12], [659, 0.08, 0.09, "triangle", 0.12], [988, 0.16, 0.22, "triangle", 0.12]],
-    bad: [[311, 0, 0.14, "square", 0.05], [233, 0.14, 0.26, "square", 0.05]],
-    combo: [[784, 0, 0.07, "triangle", 0.1], [1047, 0.07, 0.07, "triangle", 0.1], [1319, 0.14, 0.16, "triangle", 0.1]],
-    done: [[523, 0, 0.12, "triangle", 0.12], [659, 0.12, 0.12, "triangle", 0.12], [784, 0.24, 0.12, "triangle", 0.12], [1047, 0.36, 0.4, "triangle", 0.14]]
+    bad: [[311, 0, 0.14, "square", 0.05], [233, 0.14, 0.26, "square", 0.05]]
   };
   let context = null;
 

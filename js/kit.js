@@ -9,6 +9,12 @@ const CekKit = (() => {
   const OOPS = ["Hampir!", "Yah, kelewat.", "Santai, belajar dulu.", "Nggak apa-apa!"];
   const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
+  // Label status setelah dinilai. Ditulis sebagai teks sungguhan supaya dibacakan pembaca layar.
+  const STATUS_LABELS = {
+    found: "Benar", correct: "Benar", answer: "Lebih aman",
+    missed: "Terlewat", extra: "Keliru", wrong: "Kurang tepat", retry: "Sempat salah"
+  };
+
   // Salinan acak (Fisher-Yates); data aslinya tidak diubah.
   function shuffled(list) {
     const copy = [...list];
@@ -72,7 +78,7 @@ const CekKit = (() => {
         el("h2", {}, [CekUI.icon(isGood ? "check" : "alert"), heading]),
         el("p", { text })
       );
-      CekSound.play(!isGood ? "bad" : streak >= 2 ? "combo" : "good");
+      CekSound.play(isGood ? "good" : "bad");
     }
 
     function hideFeedback() {
@@ -99,9 +105,10 @@ const CekKit = (() => {
       dom.task.querySelector(".mascot").replaceWith(CekUI.mascot(isRight ? "cheer" : "oops"));
     }
 
+    // kind: "check" (boleh banyak), "radio" (pilih satu), atau kosong untuk pilihan tanpa kotak (mis. "Nggak ada yang salah").
     function optionButton(id, title, onClick, kind, iconId) {
-      return el("button", { type: "button", className: "option", "data-id": id, "aria-pressed": "false", onClick }, [
-        el("span", { className: `option-${kind}`, "aria-hidden": "true" }),
+      return el("button", { type: "button", className: kind ? "option" : "option option-plain", "data-id": id, "aria-pressed": "false", onClick }, [
+        kind && el("span", { className: `option-${kind}`, "aria-hidden": "true" }),
         iconId && CekUI.questionIcon(iconId),
         el("span", { className: "option-text" }, [el("strong", { text: title })])
       ]);
@@ -113,29 +120,22 @@ const CekKit = (() => {
       });
     }
 
-    // Setiap ketukan terasa: suara kecil dan pilihan "membal".
-    function bump(button) {
-      CekSound.play("tap");
-      button.classList.remove("is-bumped");
-      void button.offsetWidth; // ulang animasi
-      button.classList.add("is-bumped");
-    }
-
-    // Kunci pilihan setelah dinilai, beri warna, dan tulis penjelasan di bawah pilihan yang relevan.
-    function lockOptions(statusOf, noteOf) {
-      dom.task.querySelector(".task-sub").textContent = "Baca penjelasan di tiap pilihan.";
+    // Kunci pilihan setelah dinilai, beri warna dan label status, dan tulis penjelasan di bawah pilihan yang relevan.
+    // labels: label pengganti per status (mis. kuis "pilih tautan palsu" tidak boleh bilang "Lebih aman").
+    function lockOptions(statusOf, noteOf, labels = {}) {
       dom.task.querySelector(".options").classList.add("is-graded");
       dom.task.querySelectorAll(".option").forEach((button) => {
         button.disabled = true;
         const status = statusOf(button.dataset.id);
         if (!status) return;
         button.classList.add(`is-${status}`);
+        button.append(el("span", { className: "option-status", text: labels[status] || STATUS_LABELS[status] }));
         const note = noteOf(button.dataset.id, status);
         if (note) button.querySelector(".option-text").append(el("span", { className: "option-note", text: note }));
       });
     }
 
-    return { setPrimary, showFeedback, hideFeedback, renderTask, setMood, optionButton, syncPressed, bump, lockOptions };
+    return { setPrimary, showFeedback, hideFeedback, renderTask, setMood, optionButton, syncPressed, lockOptions };
   }
 
   return { create, shuffled, setProgress };

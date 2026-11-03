@@ -7,6 +7,7 @@
   const unitId = Number(new URLSearchParams(location.search).get("unit")) || 1;
   const unit = UNITS.find((u) => u.id === unitId);
   const items = QUICK_ROUND.filter((q) => q.unit === unitId);
+  if (unit) CekWorld.decoratePage(unitId);
 
   const dom = {
     main: document.getElementById("quick"),
@@ -114,7 +115,7 @@
     setState({ answers });
     setProgress(answers.length);
     const streak = currentStreak();
-    CekSound.play(!isRight ? "bad" : streak >= 2 ? "combo" : "good");
+    CekSound.play(isRight ? "good" : "bad");
     const quickCard = dom.main.querySelector(".quick-card");
     quickCard.classList.add(isRight ? "is-correct" : "is-wrong");
     dom.main.querySelector(".mascot").replaceWith(CekUI.mascot(isRight ? "cheer" : "oops"));
@@ -149,7 +150,6 @@
     const after = CekLogic.recordQuick(before, unitId, score.right);
     const saved = CekLogic.saveProgress(storage, after);
     const great = score.right >= score.total - 1;
-    CekSound.play("done");
     dom.footer.className = "lesson-footer is-done";
     dom.feedback.replaceChildren();
     dom.main.replaceChildren(el("section", { className: "done", "aria-labelledby": "score-title" }, [

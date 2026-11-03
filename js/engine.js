@@ -15,6 +15,7 @@
   const questionById = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
   const isGenuine = Boolean(scenario) && scenario.flags.length === 0;
   const STEPS = scenario ? scenario.steps || ["find", "flags", "action"] : [];
+  if (scenario) CekWorld.decoratePage(scenario.unit);
 
   const dom = {
     lesson: document.getElementById("lesson"),
@@ -27,7 +28,7 @@
     primary: document.getElementById("primary")
   };
 
-  const { setPrimary, showFeedback, hideFeedback, renderTask, setMood, optionButton, syncPressed, bump, lockOptions } = CekKit.create(dom);
+  const { setPrimary, showFeedback, hideFeedback, renderTask, setMood, optionButton, syncPressed, lockOptions } = CekKit.create(dom);
   const { shuffled } = CekKit;
 
   let phone = null;
@@ -113,7 +114,7 @@
     setState({ findChoices: choices, picked: [] });
     const options = [
       ...choices.map((node, index) => optionButton(String(index), quote(node.dataset.label), () => toggleFind(index), "check")),
-      optionButton(NO_FLAGS, "Nggak ada yang salah", () => toggleFind(NO_FLAGS), "check", "check")
+      optionButton(NO_FLAGS, "Nggak ada yang salah", () => toggleFind(NO_FLAGS))
     ];
     renderTask("Apa yang salah dari pesan ini?", scenario.lupi ? scenario.lupi.intro : "Baca pesannya, lalu pilih semua yang bikin curiga.", options, "Bagian pesan", "find", "sus");
     setPrimary("Periksa", false, checkFind);
@@ -128,7 +129,6 @@
     else picked = [...without, key];
     setState({ picked });
     syncPressed(picked);
-    bump(dom.task.querySelector(`[data-id="${key}"]`));
     setPrimary("Periksa", picked.length > 0, checkFind);
   }
 
@@ -170,7 +170,7 @@
   function startFlags() {
     const options = [
       ...QUESTIONS.map((q) => optionButton(q.id, q.title, () => toggleFlag(q.id), "check", q.id)),
-      optionButton(NO_FLAGS, "Nggak ada tanda bahaya", () => toggleFlag(NO_FLAGS), "check", "check")
+      optionButton(NO_FLAGS, "Nggak ada tanda bahaya", () => toggleFlag(NO_FLAGS))
     ];
     const sub = "Pilih semua yang cocok, ya.";
     renderTask("Tanda bahayanya apa aja?", sub, options, "Tanda bahaya", "chips");
@@ -185,7 +185,6 @@
     else selected = [...without(state.selected, NO_FLAGS), id];
     setState({ selected });
     syncPressed(selected);
-    bump(dom.task.querySelector(`[data-id="${id}"]`));
     setPrimary("Periksa", selected.length > 0, checkFlags);
   }
 
@@ -251,6 +250,7 @@
     const cells = left.flatMap((item, i) => [item, right[i]]);
     setState({ matchPick: null, matchWrong: [], matchDone: 0 });
     renderTask("Pasangkan, yuk!", "Ketuk bagian pesan, lalu pertanyaan yang cocok.", cells, "Pasangkan", "match");
+    dom.task.append(el("p", { className: "visually-hidden", id: "match-status", "aria-live": "polite" }));
     setPrimary("Pasangkan semua dulu", false, null);
   }
 
@@ -259,7 +259,6 @@
     if (!first || first.dataset.side === button.dataset.side) {
       if (first) first.setAttribute("aria-pressed", "false");
       button.setAttribute("aria-pressed", "true");
-      bump(button);
       setState({ matchPick: button });
       return;
     }
@@ -270,18 +269,38 @@
       const wrong = [...new Set([...state.matchWrong, first.dataset.flag, button.dataset.flag])];
       setState({ matchWrong: wrong });
       CekSound.play("bad");
+      announce("Belum cocok, coba lagi.");
       pair.forEach((item) => { item.classList.remove("is-shaking"); void item.offsetWidth; item.classList.add("is-shaking"); });
       return;
     }
-    CekSound.play("tap");
+    CekSound.play("good");
+    announce(`Cocok: ${questionById[button.dataset.flag].title}`);
     pair.forEach((item) => { item.disabled = true; item.classList.add("is-matched"); });
     setState({ matchDone: state.matchDone + 1 });
     if (state.matchDone === scenario.flags.length) checkMatch();
   }
 
+  function announce(text) {
+    dom.task.querySelector("#match-status").textContent = text;
+  }
+
+  // Setelah semua cocok: setiap pertanyaan jadi satu baris. Alasannya hanya ditulis di pasangan yang
+  // sempat salah (di situ pelajarannya), supaya semuanya muat satu layar.
+  function showMatchedPairs() {
+    const rows = scenario.flags.map((flag) => optionButton(flag, questionById[flag].title, null, "check", flag));
+    dom.task.querySelector(".options").replaceWith(
+      el("div", { className: "options", role: "group", "aria-label": "Pasangan" }, rows)
+    );
+    lockOptions(
+      (flag) => (state.matchWrong.includes(flag) ? "retry" : "found"),
+      (flag, status) => (status === "retry" ? scenario.evidence[flag] : "")
+    );
+  }
+
   function checkMatch() {
     const result = CekLogic.gradeMatch(scenario, state.matchWrong);
     setState({ flagResult: result });
+    showMatchedPairs();
     const heading = result.allCorrect ? "Semua pasangan cocok!" : `Cocok semua, tapi ${result.missed.length} sempat salah.`;
     graded(result.allCorrect, heading, scenario.verdict, CekLogic.XP_ALL_FLAGS);
   }
@@ -300,7 +319,6 @@
   function choose(index, check) {
     setState({ choice: index });
     syncPressed([String(index)]);
-    bump(dom.task.querySelector(`[data-id="${index}"]`));
     setPrimary("Periksa", true, check);
   }
 
@@ -311,7 +329,7 @@
       const index = Number(id);
       if (index === state.choice) return isRight ? "correct" : "wrong";
       return !isRight && options[index].correct ? "answer" : "";
-    }, () => "");
+    }, () => "", { answer: "Jawabannya", wrong: "Pilihanmu" });
     graded(isRight, isRight ? "Itu dia yang asli!" : "Itu tiruan, lho.", why, 0);
   }
 
@@ -332,7 +350,6 @@
     const line = dom.task.querySelector(".reply-line");
     const bank = dom.task.querySelector(".reply-bank");
     (tile.parentElement === line ? bank : line).append(tile);
-    bump(tile);
     setPrimary("Periksa", line.children.length > 0, checkReply);
   }
 
@@ -358,10 +375,12 @@
     const result = CekLogic.gradeAction(scenario, state.choice);
     const chosen = scenario.actions[state.choice];
     setState({ actionResult: result });
+    // Kalau salah, tunjukkan satu pilihan yang lebih aman (yang pertama) supaya penjelasan muat satu layar.
+    const safest = scenario.actions.findIndex((action) => action.correct);
     lockOptions((id) => {
       const index = Number(id);
       if (index === state.choice) return result.correct ? "correct" : "wrong";
-      return !result.correct && scenario.actions[index].correct ? "answer" : "";
+      return !result.correct && index === safest ? "answer" : "";
     }, (id, status) => (status === "answer" ? scenario.actions[Number(id)].why : ""));
     graded(result.correct, result.correct ? "Langkah yang tepat!" : "Hmm, kurang pas nih.", chosen.why, CekLogic.XP_RIGHT_ACTION);
   }
@@ -390,9 +409,8 @@
 
   function finish() {
     hideFeedback();
-    CekSound.play("done");
     const before = CekLogic.loadProgress(storage);
-    const after = CekLogic.recordLesson(before, scenario.id, state.flagResult, state.actionResult);
+    const after = CekLogic.recordLesson(before, scenario.id, state.flagResult, state.actionResult, state.findResult);
     const saved = CekLogic.saveProgress(storage, after);
     dom.lesson.classList.add("is-done");
     dom.footer.classList.add("is-done");
@@ -414,6 +432,12 @@
     ]));
     setPrimary("Ke jalur belajar", true, () => { location.href = "index.html"; });
   }
+
+  // Tombol X di bar atas: konfirmasi dulu kalau pelajaran sedang berjalan.
+  document.querySelector(".lesson-top a.icon-btn").addEventListener("click", (event) => {
+    const midLesson = scenario && !dom.lesson.classList.contains("is-done");
+    if (midLesson && !window.confirm("Keluar dari pelajaran? Jawabanmu di pelajaran ini tidak disimpan.")) event.preventDefault();
+  });
 
   const STARTERS = { find: startFind, flags: startFlags, match: startMatch, url: startUrl, reply: startReply, action: startAction };
 

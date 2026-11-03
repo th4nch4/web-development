@@ -32,6 +32,7 @@ SCENARIOS.forEach((s) => {
   test(`skenario "${s.id}" lengkap dan konsisten`, () => {
     assert.match(s.id, /^[a-z0-9-]+$/, "id hanya huruf kecil, angka, dan tanda hubung");
     assert.ok(UNITS.some((u) => u.id === s.unit), "unit tidak ada di UNITS");
+    assert.ok(typeof s.icon === "string" && s.icon, "icon wajib diisi (nama ikon di js/ui.js)");
     assert.ok(APPS.includes(s.app), `app harus salah satu dari ${APPS.join(", ")}`);
     assert.ok(s.title && s.verdict && s.takeaway, "title, verdict, dan takeaway wajib diisi");
     assert.ok(s.sender && s.sender.name && s.sender.detail, "sender.name dan sender.detail wajib diisi");

@@ -38,8 +38,8 @@
 */
 
 const UNITS = [
-  { id: 1, title: "Bagian 1", subtitle: "Paket, file, dan link" },
-  { id: 2, title: "Bagian 2", subtitle: "Kode OTP dan pesan asli" }
+  { id: 1, title: "Bagian 1", subtitle: "Paket, file, dan link", world: "Kota Paket", icon: "box" },
+  { id: 2, title: "Bagian 2", subtitle: "Kode OTP dan pesan asli", world: "Benteng Kode", icon: "key" }
 ];
 
 const SCENARIOS = [
@@ -47,6 +47,7 @@ const SCENARIOS = [
     id: "undangan-apk",
     lupi: { intro: "Ada undangan nikahan dari nomor baru. Kondangan atau curiga dulu?", good: "Undangan asli nggak perlu di-install. Nikahannya bukan di Play Store!", bad: "Hampir ke-install tuh! Untung cuma latihan." },
     unit: 1,
+    icon: "invite", // ikon level di peta beranda
     title: "Undangan pernikahan",
     app: "chat",
     sender: {
@@ -86,6 +87,7 @@ const SCENARIOS = [
     id: "pesanan-dikirim",
     lupi: { intro: "Kemarin kamu beli sepatu, terus notif ini muncul. Curiga atau santai?", good: "Sip! Nggak semua notif itu jebakan.", bad: "Santai, ini notif biasa dari aplikasi yang kamu pakai sendiri." },
     unit: 1,
+    icon: "truck",
     title: "Pesanan dikirim",
     app: "notif",
     context: "Kemarin kamu memesan sepatu di aplikasi belanja Pasar Rimbun.",
@@ -116,6 +118,7 @@ const SCENARIOS = [
     id: "paket-tertahan",
     lupi: { intro: "Paketmu katanya nyangkut di gudang. Kurirnya SMS sendiri, nih.", good: "Mantap, nggak kepancing ongkir receh!", bad: "Ongkirnya receh, tapi yang diincar data kartumu!" },
     unit: 1,
+    icon: "box",
     title: "Paket tertahan",
     app: "sms",
     sender: {
@@ -170,6 +173,7 @@ const SCENARIOS = [
     id: "akun-bank-diblokir",
     lupi: { intro: "Pagi-pagi udah dapet email dari \"bank\". Ngopi dulu, terus cek baik-baik!", good: "Detektif level bank! Satu huruf nyamar pun ketahuan.", bad: "Penipunya cuma ganti satu huruf. Licik, ya?" },
     unit: 1,
+    icon: "bank",
     title: "Akun bank diblokir",
     app: "email",
     sender: {
@@ -223,6 +227,7 @@ const SCENARIOS = [
     id: "teman-minta-kode",
     lupi: { intro: "Dimas tiba-tiba chat minta tolong. Temen sendiri, sih... tapi cek dulu!", good: "Temen beneran nggak bakal minta kode OTP-mu.", bad: "Kode itu kunci akunmu. Dimas pun nggak boleh tahu!" },
     unit: 2,
+    icon: "chat",
     title: "Teman minta kode",
     app: "chat",
     sender: {
@@ -264,6 +269,7 @@ const SCENARIOS = [
     id: "kode-otp-asli",
     lupi: { intro: "Kamu baru aja login, terus SMS ini masuk. Aman atau jebakan?", good: "Betul! Kodenya buat kamu pakai sendiri.", bad: "Santai, kode ini memang kamu sendiri yang minta." },
     unit: 2,
+    icon: "key",
     title: "Kode OTP",
     app: "sms",
     context: "Kamu baru saja menekan tombol Masuk di aplikasi Bank Arunika di HP-mu sendiri.",
