@@ -4,14 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="format-detection" content="telephone=no"> <!-- iPhone: nomor fiktif tidak jadi link telepon -->
-  <title>Rapor · CekDulu</title>
+  <title data-i18n="title.report">Rapor · CekDulu</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/coach.css">
+  <link rel="stylesheet" href="css/dialog.css">
   <script src="js/sound.js"></script>
-  <script src="js/theme.js"></script>
+  <script src="js/strings.js"></script>
+  <script src="js/lang.js"></script>
+  <script src="js/settings.js"></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="back-link" href="index.html">← Jalur belajar</a>
+    <a class="back-link" href="index.html" data-i18n="report.backLink">← Jalur belajar</a>
     <span id="xp"></span>
   </header>
 
@@ -19,9 +23,10 @@
     <noscript><p>Aktifkan JavaScript untuk memakai CekDulu.</p></noscript>
   </main>
 
-  <script src="js/questions.js"></script>
-  <script src="js/scenarios.js"></script>
+  <script>CekLang.load("questions")</script> <!-- js/questions.js atau js/en/questions.js -->
+  <script>CekLang.load("scenarios")</script> <!-- js/scenarios.js atau js/en/scenarios.js -->
   <script src="js/logic.js"></script>
+  <script src="js/coach.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/report.js"></script>
 </body>

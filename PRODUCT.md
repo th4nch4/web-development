@@ -50,7 +50,7 @@ Empat hal yang membedakan CekDulu dan harus dijaga di semua pekerjaan berikutnya
 ## Capabilities and Constraints
 
 **Yang sudah ada:**
-- Beranda dengan jalur belajar: 6 pelajaran dalam 2 bagian, XP, dan maskot Lupi (kaca pembesar).
+- Beranda dengan jalur belajar: 6 pelajaran dalam 2 bagian, Dunia 3 berisi materi phishing, XP, streak, dan maskot Coach Wall.
 - Simulator pelajaran, 3 soal ala Duolingo: Cari (ketuk bagian mencurigakan) → Tanda bahaya apa saja → Tindakan → Selesai.
 - Rapor.
 - `ragu.html` ("Lagi Ragu?") dan `telanjur.html` ("Sudah Telanjur?").
@@ -70,7 +70,7 @@ Empat hal yang membedakan CekDulu dan harus dijaga di semua pekerjaan berikutnya
 
 XP yang bertambah setiap kali pelajaran diulang memang disengaja.
 
-**Istilah tetap:** "5 Pertanyaan Sebelum Klik" (Siapa pengirimnya? / Ke mana link ini? / File apa ini? / Kenapa harus buru-buru? / Apa yang diminta?), "Lagi Ragu?", "Sudah Telanjur?", Lupi.
+**Istilah tetap:** "5 Pertanyaan Sebelum Klik" (Siapa pengirimnya? / Ke mana link ini? / File apa ini? / Kenapa harus buru-buru? / Apa yang diminta?), "Lagi Ragu?", "Sudah Telanjur?", Coach Wall (dulu Lupi).
 
 **Pengujian:**
 - `node --test` untuk logika dan validasi isi skenario;
@@ -92,7 +92,7 @@ XP yang bertambah setiap kali pelajaran diulang memang disengaja.
 
 - Nama **CekDulu** sudah final.
 - Bahasa Indonesia yang santai dan hangat, tidak menggurui.
-- Maskot Lupi, kaca pembesar imut (French Blue) dengan mata besar, pipi merona, tangan, dan kaki. Ekspresi: senang, mikir, waduh, sorak.
+- Maskot **Coach Wall** (sejak 8 Nov 2026, menggantikan Lupi): pelatih muda bertopi baseball berhuruf W, jaket olahraga, dan peluit. "Wall" = tembok yang melindungimu dari penipu. Sembilan ekspresi bergerak (melambai, mikir, curiga dengan kaca pembesar, sorak, jatuh hati, tepuk jidat, kaget, garuk kepala, menjelaskan).
 - Tim memilih mekanik belajar ala Duolingo (jalur pelajaran, umpan balik instan, XP) tetapi dengan identitas sendiri, tanpa branding Duolingo.
 
 ## Evidence on Hand
@@ -128,3 +128,15 @@ Belum ada testimoni, hasil uji pengguna, atau data pemakaian. Jangan mengarang s
 - Soal pertama pelajaran: "Apa yang salah dari pesan ini?". Pilihannya potongan pesan itu sendiri, diacak, dan tanpa sorotan di HP simulasi.
 - Wallpaper chat bermotif doodle ala WhatsApp; layar kunci memakai wallpaper gelombang. Keduanya hanya warna palet.
 - Lupi punya celetukan sendiri untuk setiap pesan dan ekspresi "curiga" serta "memancing".
+
+**Perubahan 8 November 2026 (permintaan ketua):**
+- Lupi diganti Coach Wall (maskot manusia). Dia bereaksi di lembar hasil setiap jawaban, bisa diketuk untuk tips umum (tidak pernah membocorkan jawaban), dan menunggu di samping level yang sedang dimainkan di peta.
+- Warna status jawaban: hijau benar, kuning hampir (sebagian benar di soal pilih banyak), merah salah. Ini pengecualian palet yang disetujui ketua; label teks tetap ada.
+- Soal pilih banyak menampilkan kotak centang dan penanda "Bisa pilih lebih dari satu"; soal pilih satu memakai bulatan.
+- Streak = jawaban benar beruntun (bukan hari beruntun), tampil sebagai api di bar atas: 1-2 oranye, 3-4 biru, 5 ke atas pink. Salah atau hampir mengembalikannya ke 0. Ini membatalkan keputusan 29 Okt "tanpa streak".
+- Latar bergerak dan hiasan di pinggir halaman soal dihapus supaya tidak mengganggu.
+- Materi "Kenali jenis phishing" pindah dari rak di bawah peta menjadi Dunia 3 "Teluk Phishing" di peta (urutan bebas). Catatan fiktif/privasi dan tombol Hapus progres pindah ke Pengaturan > Umum.
+- Materi Voice Phishing punya 3 soal suara: penelepon tanpa wajah berbicara (suara bawaan perangkat, hanya suara lokal), pemain memilih jawaban. Tanpa suara, kalimatnya ditampilkan sebagai teks.
+- Pengaturan menjadi jendela di tengah layar dengan menu Umum, Tampilan, Bahasa, dan pilihan baru: getar, kecepatan suara penelepon, waktu Ronde Kilat, animasi, konfeti.
+- Keluar dari pelajaran dan hapus progres memakai dialog buatan sendiri, bukan jendela bawaan browser.
+- Layar selesai bergaya game: Coach Wall besar, kotak angka berwarna dengan ikon (XP, bagian ketemu, tindakan), tombol "Lanjut" dan "Kembali ke beranda".

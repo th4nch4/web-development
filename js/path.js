@@ -1,18 +1,14 @@
 // Halaman jalur belajar: pelajaran berurutan seperti peta level, dibagi per dunia bertema
-// (latar dan jalan dari js/world.js), ditutup dengan rapor.
+// (latar dan jalan dari js/world.js). Dunia 3 berisi materi jenis-jenis phishing (urutan bebas),
+// dan jalurnya ditutup dengan rapor. Coach Wall menunggu di samping level yang sedang dimainkan.
 (() => {
   const { el, icon } = CekUI;
+  const { t } = CekLang;
   const OFFSETS = [0, 48, 72, 48, 0, -48, -72, -48]; // pola zig-zag jalur, dalam px
   const storage = CekUI.getStorage();
   const progress = CekLogic.loadProgress(storage);
   const current = CekLogic.currentIndex(SCENARIOS, progress);
   const doneCount = SCENARIOS.filter((s) => CekLogic.isDone(progress, s.id)).length;
-
-  function coachText() {
-    if (doneCount === 0) return "Halo, aku Lupi! Bareng aku, yuk latihan nyari pesan penipuan.";
-    if (current === -1) return "Semua beres, kamu keren! Intip rapormu, yuk.";
-    return `Mantap, ${doneCount} dari ${SCENARIOS.length} beres! Gas lanjut?`;
-  }
 
   const offsetOf = (position) => OFFSETS[position % OFFSETS.length];
 
@@ -37,47 +33,40 @@
   function lessonNode(scenario, index) {
     const done = CekLogic.isDone(progress, scenario.id);
     const stars = CekLogic.lessonStars(progress.lessons[scenario.id]);
-    const name = `Level ${index + 1}: ${scenario.title}`;
+    const name = t("map.level", { n: index + 1, title: scenario.title });
     const node = done || CekLogic.isUnlocked(SCENARIOS, progress, index)
       ? el("a", {
         className: done ? "node node-done" : "node node-current",
         href: `simulator.html?s=${encodeURIComponent(scenario.id)}`,
-        "aria-label": `${name}, ${done ? `selesai, ${stars} dari 3 bintang, ulangi` : "mulai"}`
+        "aria-label": done ? t("map.levelDone", { name, stars }) : t("map.levelStart", { name })
       }, [icon(scenario.icon), done && el("span", { className: "node-check" }, icon("check"))])
-      : el("span", { className: "node node-locked", role: "img", "aria-label": `${name}, terkunci` }, icon("lock"));
-    const badge = index === current ? (doneCount === 0 ? "Mulai" : "Lanjut") : null;
+      : el("span", { className: "node node-locked", role: "img", "aria-label": t("map.levelLocked", { name }) }, icon("lock"));
+    const badge = index === current ? t(doneCount === 0 ? "map.badgeStart" : "map.badgeContinue") : null;
     return pathItem(node, scenario.title, index, badge, done && starRow(stars));
   }
 
   // Ronde Kilat: bonus di akhir setiap bagian, terbuka setelah semua pelajaran bagian itu selesai.
   function quickNode(unit, position) {
     const best = (progress.quick || {})[unit.id];
-    const label = best === undefined ? "Ronde Kilat" : `Ronde Kilat · skor ${best}`;
+    const label = best === undefined ? t("map.quick") : t("map.quickScore", { score: best });
     const node = CekLogic.isQuickUnlocked(SCENARIOS, progress, unit.id)
-      ? el("a", { className: "node node-quick", href: `kilat.html?unit=${unit.id}`, "aria-label": `${label}: asli atau penipuan?` }, icon("bolt"))
-      : el("span", { className: "node node-locked", role: "img", "aria-label": "Ronde Kilat, terbuka setelah semua pelajaran di bagian ini selesai" }, icon("bolt"));
+      ? el("a", { className: "node node-quick", href: `kilat.html?unit=${unit.id}`, "aria-label": t("map.quickOpen", { label }) }, icon("bolt"))
+      : el("span", { className: "node node-locked node-quick-locked", role: "img", "aria-label": t("map.quickLocked") }, icon("bolt"));
     return pathItem(node, label, position, null);
   }
 
-  // Materi "Kenali jenis phishing": rak terpisah di bawah jalur, selalu terbuka, urutan bebas.
-  // Jalur pelajaran (simulator) tetap yang pertama terlihat.
-  function materiShelf() {
-    const scores = progress.materi || {};
-    const cards = MATERI.map((materi) => {
-      const done = scores[materi.id] !== undefined;
-      return el("li", {}, el("a", {
-        className: done ? "materi-card is-done" : "materi-card",
-        href: `materi.html?m=${encodeURIComponent(materi.id)}`,
-        "aria-label": `${materi.title}${done ? ", selesai, ulangi" : ""}`
-      }, [
-        el("span", { className: "materi-icon", "aria-hidden": "true" }, icon(done ? "check" : materi.icon)),
-        el("span", { className: "materi-title", text: materi.title })
-      ]));
-    });
-    return el("section", { className: "materi-shelf", "aria-labelledby": "materi-title" }, [
-      el("h2", { id: "materi-title", text: "Kenali jenis phishing" }),
-      el("p", { className: "materi-lede", text: "Penjelasan singkat + mini kuis. Buka yang mana aja." }),
-      el("ul", { className: "materi-list" }, cards)
+  // Satu dunia di peta: langit dan kota, banner yang menempel saat digulir, lalu jalur levelnya.
+  function worldSection(id, names, iconName, items) {
+    return el("section", { className: `unit unit-${id} world world-${id}`, "aria-label": t("map.worldLabel", names) }, [
+      CekWorld.sky(id),
+      el("div", { className: "unit-banner" }, [
+        el("span", { className: "unit-icon", "aria-hidden": "true" }, icon(iconName)),
+        el("div", {}, [
+          el("p", { className: "unit-kicker", text: t("map.worldKicker", names) }),
+          el("h2", { text: names.subtitle })
+        ])
+      ]),
+      el("ol", { className: "path" }, items)
     ]);
   }
 
@@ -89,45 +78,50 @@
       ...lessons.map(({ scenario, index }) => lessonNode(scenario, index)),
       quickNode(unit, lessons[lessons.length - 1].index + 1)
     ];
-    // Setiap level dapat satu hiasan dunia di sisi yang kosong.
-    items.forEach((item, i) => item.append(CekWorld.prop(unit.id, i, offsetOf(lessons[0].index + i))));
-    return el("section", { className: `unit unit-${unit.id} world world-${unit.id}`, "aria-label": `Dunia ${unit.id}, ${unit.world}: ${unit.subtitle}` }, [
-      CekWorld.sky(unit.id),
-      el("div", { className: "unit-banner" }, [
-        el("span", { className: "unit-icon", "aria-hidden": "true" }, icon(unit.icon)),
-        el("div", {}, [
-          el("p", { className: "unit-kicker", text: `Dunia ${unit.id} · ${unit.world}` }),
-          el("h2", { text: unit.subtitle })
-        ])
-      ]),
-      el("ol", { className: "path" }, items)
-    ]);
+    // Setiap level dapat satu hiasan dunia di sisi yang kosong; di level yang sedang dimainkan, Coach Wall yang menunggu.
+    items.forEach((item, i) => {
+      const x = offsetOf(lessons[0].index + i);
+      item.append(item.classList.contains("is-current") ? CekWorld.coach(i, x) : CekWorld.prop(unit.id, i, x));
+    });
+    return worldSection(unit.id, { n: unit.id, world: unit.world, subtitle: unit.subtitle }, unit.icon, items);
+  }
+
+  // Dunia 3 "Teluk Phishing": setiap materi jadi satu level. Semuanya terbuka, boleh dimainkan urutan bebas.
+  const { MATERI_WORLD } = CekWorld;
+
+  function materiNode(materi, index) {
+    const best = (progress.materi || {})[materi.id];
+    const done = best !== undefined;
+    const quizzes = materi.steps.filter((step) => step.type !== "learn").length;
+    const node = el("a", {
+      className: done ? "node node-done" : "node",
+      href: `materi.html?m=${encodeURIComponent(materi.id)}`,
+      "aria-label": done ? t("materi.cardDone", { title: materi.title }) : materi.title
+    }, [icon(materi.icon), done && el("span", { className: "node-check" }, icon("check"))]);
+    const item = pathItem(node, materi.title, index, null, done && starRow(CekLogic.materiStars(best, quizzes)));
+    item.append(CekWorld.prop(MATERI_WORLD, index, offsetOf(index)));
+    return item;
+  }
+
+  function materiWorld() {
+    const names = { n: MATERI_WORLD, world: t("map.materiWorld"), subtitle: t("map.materiSubtitle") };
+    return worldSection(MATERI_WORLD, names, "hook", MATERI.map(materiNode));
   }
 
   function reportPath() {
     const node = doneCount > 0
-      ? el("a", { className: "node node-trophy", href: "rapor.html", "aria-label": "Rapor belajarmu" }, icon("trophy"))
-      : el("span", { className: "node node-locked", role: "img", "aria-label": "Rapor, terbuka setelah satu pelajaran selesai" }, icon("trophy"));
+      ? el("a", { className: "node node-trophy", href: "rapor.html", "aria-label": t("map.reportOpen") }, icon("trophy"))
+      : el("span", { className: "node node-locked node-trophy-locked", role: "img", "aria-label": t("map.reportLocked") }, icon("trophy"));
     return el("ol", { className: "path path-end" }, [
-      pathItem(node, "Rapor", SCENARIOS.length, current === -1 ? "Lihat" : null)
+      pathItem(node, t("map.report"), SCENARIOS.length, current === -1 ? t("map.badgeView") : null)
     ]);
   }
 
-  function setupReset() {
-    const reset = document.getElementById("reset");
-    reset.hidden = doneCount === 0;
-    reset.addEventListener("click", () => {
-      if (!window.confirm("Hapus semua progres di perangkat ini?")) return;
-      CekLogic.clearProgress(storage);
-      location.reload();
-    });
-  }
-
   document.getElementById("xp").replaceChildren(CekUI.xpChip(progress.xp));
-  CekUI.renderCoach(document.getElementById("coach"), coachText(), "happy");
-  document.getElementById("units").replaceChildren(...UNITS.map(unitSection), reportPath());
-  CekWorld.mountRoads([...document.querySelectorAll(".world")]);
-  document.getElementById("materi").replaceChildren(materiShelf());
-  document.getElementById("storage-note").hidden = Boolean(storage);
-  setupReset();
+  document.getElementById("units").replaceChildren(...UNITS.map(unitSection), materiWorld(), reportPath());
+  const worlds = [...document.querySelectorAll(".world")];
+  CekWorld.mountRoads(worlds);
+  CekWorld.mountTransitions(worlds);
+  // Dipulihkan dari cache Back/Forward: XP, bintang, dan level terbuka masih yang lama, jadi muat ulang.
+  window.addEventListener("pageshow", (event) => { if (event.persisted) location.reload(); });
 })();

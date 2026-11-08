@@ -1,0 +1,242 @@
+/* Coach Wall (js/coach.js), penelepon misterius, dan api streak.
+   Gerakan selalu berulang, tapi tidak seragam: napas, kedip dua kali sesekali, gerakan besar diberi
+   ancang-ancang dan jeda, bagian tubuh bergerak tidak bersamaan. Semua mati kalau gerak dikurangi. */
+
+.mascot { flex: none; display: block; width: 64px; height: 64px; }
+.mascot svg { width: 100%; height: 100%; overflow: visible; }
+.cw, .cw * { transform-box: view-box; } /* titik putar ditulis dalam satuan gambar 120x120 */
+
+/* Dasar: napas pelan, kepala sedikit miring bergantian, kedip yang kadang dua kali. */
+.cw-all { transform-origin: 60px 124px; animation: cw-breathe 3.6s cubic-bezier(.45, 0, .55, 1) infinite; }
+.cw-head { transform-origin: 60px 88px; animation: cw-tilt 5.4s ease-in-out -1.2s infinite; }
+.cw-eyes { transform-origin: 60px 62px; animation: cw-blink 5.7s linear infinite; }
+@keyframes cw-breathe { 0%, 100% { transform: none; } 45% { transform: scale(1.012, 1.024); } }
+@keyframes cw-tilt { 0%, 100% { transform: none; } 30% { transform: rotate(-2.4deg); } 64% { transform: rotate(1.6deg); } }
+@keyframes cw-blink {
+  0%, 40%, 44%, 80%, 82.4%, 84%, 86.4%, 100% { transform: none; }
+  42%, 81.2%, 85.2% { transform: scaleY(.08); }
+}
+
+/* Melambai: tiga kibasan, lalu diam sebentar. */
+.cw-happy .cw-arm-r { transform-origin: 90px 100px; animation: cw-wave 2.8s cubic-bezier(.4, 0, .2, 1) infinite; }
+@keyframes cw-wave {
+  0%, 56%, 100% { transform: none; }
+  9% { transform: rotate(-15deg); } 19% { transform: rotate(7deg); } 29% { transform: rotate(-13deg); }
+  39% { transform: rotate(5deg); } 48% { transform: rotate(-3deg); }
+}
+
+/* Mikir: mata melirik ke sana-sini, jari mengetuk dagu. */
+.cw-think .cw-look { animation: cw-glance 4.8s ease-in-out infinite; }
+.cw-think .cw-arm-r { transform-origin: 90px 101px; animation: cw-tap 4.8s ease-in-out infinite; }
+@keyframes cw-glance { 0%, 28% { transform: none; } 36%, 62% { transform: translate(-3px, 1px); } 70%, 100% { transform: none; } }
+@keyframes cw-tap { 0%, 70%, 100% { transform: none; } 74%, 82% { transform: rotate(-3deg); } 78%, 86% { transform: rotate(1deg); } }
+
+/* Curiga: kaca pembesar menyisir, alis naik-turun dua kali. */
+.cw-sus .cw-arm-r { transform-origin: 86px 80px; animation: cw-scan 3.4s cubic-bezier(.45, 0, .55, 1) infinite; }
+.cw-sus .cw-brow-r { animation: cw-brow 3.4s ease-in-out infinite; }
+@keyframes cw-scan { 0%, 100% { transform: none; } 32% { transform: translate(-4px, 1.5px) rotate(-4deg); } 64% { transform: translate(2px, -1px) rotate(2deg); } }
+@keyframes cw-brow { 0%, 36%, 48%, 100% { transform: none; } 40%, 52% { transform: translateY(-2.4px); } 44% { transform: none; } }
+
+/* Sorak: jongkok dulu (ancang-ancang), lompat, mendarat memantul, lalu jeda. Lengan ikut mengayun. */
+.cw-cheer .cw-all, .cw-love .cw-all { animation: cw-jump 1.4s cubic-bezier(.3, 0, .3, 1) infinite; }
+.cw-cheer .cw-arm-l, .cw-love .cw-arm-l { transform-origin: 30px 100px; animation: cw-pump-l 1.4s cubic-bezier(.3, 0, .3, 1) infinite; }
+.cw-cheer .cw-arm-r, .cw-love .cw-arm-r { transform-origin: 90px 100px; animation: cw-pump-r 1.4s cubic-bezier(.3, 0, .3, 1) infinite; }
+@keyframes cw-jump {
+  0%, 78%, 100% { transform: none; }
+  13% { transform: translateY(1.5px) scale(1.05, .93); }
+  33% { transform: translateY(-14px) scale(.96, 1.05); }
+  47% { transform: translateY(-16px); }
+  63% { transform: translateY(0) scale(1.04, .95); }
+}
+@keyframes cw-pump-l { 0%, 78%, 100% { transform: none; } 13% { transform: rotate(-14deg); } 40% { transform: rotate(9deg); } }
+@keyframes cw-pump-r { 0%, 78%, 100% { transform: none; } 13% { transform: rotate(14deg); } 40% { transform: rotate(-9deg); } }
+.cw-spark { transform-box: fill-box; transform-origin: center; animation: cw-twinkle 1.4s ease-in-out infinite; }
+@keyframes cw-twinkle { 0%, 100% { transform: scale(.3) rotate(0); } 45% { transform: scale(1.1) rotate(45deg); } }
+.cw-heart-eye { transform-box: fill-box; transform-origin: center; animation: cw-throb .7s ease-in-out infinite; }
+@keyframes cw-throb { 50% { transform: scale(1.18); } }
+.cw-heart { transform-box: fill-box; transform-origin: center; animation: cw-float 2.4s ease-out infinite; }
+.cw-heart-2 { animation-delay: -.8s; }
+.cw-heart-3 { animation-delay: -1.6s; }
+@keyframes cw-float {
+  0% { opacity: 0; transform: translateY(8px) scale(.4); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-20px) scale(.9) rotate(12deg); }
+}
+
+/* Salah: tepuk jidat sambil geleng pelan, badan merosot, keringat menetes. */
+.cw-sad .cw-head { animation: cw-no 3.2s ease-in-out infinite; }
+.cw-sad .cw-all { animation: cw-slump 3.2s ease-in-out infinite; }
+@keyframes cw-no {
+  0%, 62%, 100% { transform: none; }
+  12% { transform: rotate(-5deg); } 26% { transform: rotate(4.5deg); } 40% { transform: rotate(-3deg); } 52% { transform: rotate(1.4deg); }
+}
+@keyframes cw-slump { 0%, 100% { transform: none; } 50% { transform: translateY(1.5px) scale(1.01, .975); } }
+.cw-drop { transform-box: fill-box; transform-origin: 50% 0; animation: cw-drip 2.2s ease-in infinite; }
+@keyframes cw-drip {
+  0% { opacity: 0; transform: translateY(-2px) scale(.4); }
+  18% { opacity: 1; transform: none; }
+  80% { opacity: 1; transform: translateY(9px); }
+  100% { opacity: 0; transform: translateY(11px) scale(.8); }
+}
+
+/* Kaget: tersentak ke atas, gemetar sebentar, lalu tenang. */
+.cw-oops .cw-all { animation: cw-startle 2.6s cubic-bezier(.3, 0, .3, 1) infinite; }
+.cw-oops .cw-brows { animation: cw-brow-jump 2.6s ease-out infinite; }
+@keyframes cw-startle {
+  0%, 30%, 100% { transform: none; }
+  6% { transform: translateY(-7px) scale(.97, 1.04); }
+  12% { transform: translateY(0) scale(1.02, .98); }
+  16% { transform: translateX(-1.4px); } 19% { transform: translateX(1.4px); }
+  22% { transform: translateX(-1px); } 25% { transform: translateX(.8px); }
+}
+@keyframes cw-brow-jump { 0%, 34%, 100% { transform: none; } 6%, 22% { transform: translateY(-3px); } }
+
+/* Hampir benar: garuk kepala sambil nyengir, kepala miring. */
+.cw-close .cw-arm-r { transform-origin: 90px 101px; animation: cw-scratch 2.4s ease-in-out infinite; }
+.cw-close .cw-head { animation: cw-sheepish 2.4s ease-in-out infinite; }
+@keyframes cw-scratch {
+  0%, 52%, 100% { transform: none; }
+  6% { transform: rotate(-4deg); } 12% { transform: rotate(3deg); } 18% { transform: rotate(-4deg); }
+  24% { transform: rotate(3deg); } 30% { transform: rotate(-4deg); } 36% { transform: rotate(3deg); } 44% { transform: rotate(-1.5deg); }
+}
+@keyframes cw-sheepish { 0%, 100% { transform: rotate(3deg); } 50% { transform: rotate(5deg); } }
+
+/* Menjelaskan: jari menunjuk naik-turun, mulut bergerak seperti bicara. */
+.cw-teach .cw-arm-r, .cw-fish .cw-arm-r { transform-origin: 90px 100px; animation: cw-point 2s ease-in-out infinite; }
+.cw-teach .cw-mouth, .cw-fish .cw-mouth { transform-origin: 60px 74px; animation: cw-talk 1.1s ease-in-out infinite; }
+@keyframes cw-point { 0%, 100% { transform: none; } 40% { transform: rotate(-7deg); } 55% { transform: rotate(-5deg); } }
+@keyframes cw-talk { 0%, 100% { transform: none; } 18% { transform: scaleY(.45); } 36% { transform: none; } 54% { transform: scaleY(.6); } 70% { transform: scaleY(.9); } }
+
+/* Diketuk: membal sekali (kelas dipasang js/ui.js lalu dilepas). */
+.mascot.is-poked { animation: cw-poke .5s cubic-bezier(.3, 0, .3, 1.4); }
+@keyframes cw-poke { 30% { transform: scale(1.12, .88); } 60% { transform: scale(.94, 1.08); } }
+
+/* ---------- Coach Wall yang bisa diketuk: tombol + gelembung tips ---------- */
+
+.coach-btn { position: relative; flex: none; display: block; padding: 0; color: inherit; background: none; border: 0; border-radius: 16px; cursor: pointer; }
+.coach-btn .mascot { width: 100%; height: 100%; }
+.coach-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 8;
+  width: max-content;
+  max-width: 230px;
+  padding: 8px 12px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+  color: var(--ink);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  transform: translateX(-50%);
+  animation: tip-in .25s cubic-bezier(.3, 0, .3, 1.3);
+  pointer-events: none;
+}
+.coach-tip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  background: var(--bg);
+  border-right: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  transform: translateX(-50%) rotate(45deg);
+}
+/* Kosong: tidak terlihat, tapi tetap ada supaya pembaca layar mengumumkan tips berikutnya (role=status). */
+.coach-tip:empty { opacity: 0; padding: 0; border: 0; animation: none; }
+.coach-tip:empty::after { display: none; }
+@keyframes tip-in { from { opacity: 0; transform: translate(-50%, 6px) scale(.9); } }
+@keyframes tip-in-plain { from { opacity: 0; transform: translateY(-6px) scale(.9); } }
+/* Di soal: gelembung di bawah Coach Wall, rata kiri (di atasnya terpotong tepi area soal). */
+.task-head .coach-tip { top: calc(100% + 10px); bottom: auto; left: 0; transform: none; animation-name: tip-in-plain; }
+.task-head .coach-tip::after { top: -8px; bottom: auto; left: 22px; transform: rotate(225deg); }
+/* Di peta: rata ke sisi Coach Wall supaya tidak keluar layar. */
+.world-coach[style*="--side: -1"] .coach-tip { left: 0; transform: none; animation-name: tip-in-plain; }
+.world-coach[style*="--side: 1"] .coach-tip { left: auto; right: 0; transform: none; animation-name: tip-in-plain; }
+.world-coach[style*="--side: -1"] .coach-tip::after { left: 40px; }
+.world-coach[style*="--side: 1"] .coach-tip::after { left: auto; right: 40px; transform: rotate(45deg); }
+
+/* ---------- Penelepon misterius (soal suara) ---------- */
+
+.caller-body { transform-box: view-box; transform-origin: 60px 124px; animation: cw-breathe 4s ease-in-out infinite; }
+.caller-waves path { opacity: 0; }
+.is-speaking .caller-body { animation: caller-talk .5s ease-in-out infinite; }
+.is-speaking .caller-waves path { animation: caller-wave 1.2s ease-out infinite; }
+.is-speaking .caller-waves path:nth-child(2) { animation-delay: .2s; }
+.is-speaking .caller-waves path:nth-child(3) { animation-delay: .4s; }
+@keyframes caller-talk { 50% { transform: translateY(-1.5px) rotate(-1deg); } }
+@keyframes caller-wave { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- Api streak: jawaban benar beruntun ---------- */
+/* 0 = abu, 1-2 = oranye, 3-4 = biru, 5+ = pink. Angka memakai versi gelap supaya terbaca di latar terang. */
+
+.streak { display: inline-flex; align-items: center; gap: 2px; font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1; color: var(--fire-ink); }
+.streak .icon svg { width: 28px; height: 28px; }
+.streak-off { --fire: var(--line); --fire-core: var(--bg); --fire-ink: var(--muted); }
+.streak-orange { --fire: var(--fire-orange); --fire-core: var(--fire-orange-core); --fire-ink: var(--fire-orange-ink); }
+.streak-blue { --fire: var(--fire-blue); --fire-core: var(--fire-blue-core); --fire-ink: var(--fire-blue-ink); }
+.streak-pink { --fire: var(--fire-pink); --fire-core: var(--fire-pink-core); --fire-ink: var(--fire-pink-ink); }
+.streak .fire-outer { fill: var(--fire); }
+.streak .fire-inner { fill: var(--fire-core); }
+.streak:not(.streak-off) .icon svg { transform-origin: 50% 90%; animation: flicker 1.6s ease-in-out infinite; }
+@keyframes flicker { 0%, 100% { transform: none; } 30% { transform: scale(.96, 1.05) rotate(-2deg); } 62% { transform: scale(1.03, .97) rotate(1.5deg); } }
+.streak.is-bump { animation: streak-bump .5s cubic-bezier(.3, 0, .3, 1.4); }
+.streak.is-levelup { animation: streak-levelup .8s cubic-bezier(.3, 0, .3, 1.4); }
+@keyframes streak-bump { 40% { transform: scale(1.3); } }
+@keyframes streak-levelup { 25% { transform: scale(1.5) rotate(-8deg); } 50% { transform: scale(1.2) rotate(6deg); } }
+
+/* ---------- Soal suara (materi Voice Phishing): penelepon, gelembung dengan tombol putar ---------- */
+
+.voice-card { display: flex; align-items: flex-end; gap: 14px; margin: 2px 0 14px; }
+.voice-caller { flex: none; display: grid; justify-items: center; gap: 4px; width: 112px; text-align: center; }
+.caller-art { display: block; width: 100px; height: 100px; background: var(--surface); border-radius: 50%; }
+.caller-art svg { width: 100%; height: 100%; overflow: visible; }
+.voice-label small { display: block; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.voice-label strong { display: block; font-size: 14px; line-height: 1.25; }
+.voice-bubble { position: relative; flex: 1; min-width: 0; margin-bottom: 30px; padding: 12px 14px; background: var(--bg); border: 2px solid var(--line); border-radius: 18px; }
+.voice-bubble::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  bottom: 18px;
+  width: 14px;
+  height: 14px;
+  background: var(--bg);
+  border-left: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  transform: rotate(45deg);
+}
+.voice-controls { display: flex; align-items: center; gap: 10px; }
+.voice-play, .voice-slow { flex: none; display: grid; place-items: center; color: var(--on-status); border: 0; cursor: pointer; transition: transform .08s; }
+.voice-play { width: 66px; height: 56px; background: var(--fire-blue); border-radius: 16px; box-shadow: 0 4px 0 #1565B0; }
+.voice-slow { width: 50px; height: 44px; background: var(--powder); border-radius: 14px; box-shadow: 0 4px 0 var(--french); }
+.voice-play .icon svg { width: 32px; height: 32px; }
+.voice-slow .icon svg { width: 26px; height: 26px; }
+.voice-play:active, .voice-slow:active { transform: translateY(4px); box-shadow: none; }
+.voice-bars { display: flex; align-items: center; gap: 4px; height: 36px; margin-left: 4px; }
+.voice-bars i { width: 5px; height: 100%; background: var(--line); border-radius: 3px; transform: scaleY(.3); }
+.is-speaking .voice-bars i { background: var(--fire-blue); animation: voice-bar .9s ease-in-out infinite; }
+.is-speaking .voice-bars i:nth-child(2n) { animation-duration: .7s; }
+.is-speaking .voice-bars i:nth-child(3n) { animation-duration: 1.1s; animation-delay: -.3s; }
+.is-speaking .voice-bars i:nth-child(4n+1) { animation-delay: -.5s; }
+@keyframes voice-bar { 0%, 100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+.voice-text { margin-top: 10px; font-size: 17px; font-weight: 700; font-style: italic; line-height: 1.45; }
+.voice-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; }
+.voice-toggle { min-height: 44px; font-size: 15px; }
+.voice-note { font-size: 13px; line-height: 1.35; color: var(--muted); }
+
+@media (max-width: 859px) {
+  .voice-card { gap: 10px; margin-bottom: 8px; }
+  .voice-caller { width: 76px; }
+  .caller-art { width: 68px; height: 68px; }
+  .voice-label strong { font-size: 12px; }
+  .voice-bubble { margin-bottom: 26px; padding: 10px 12px; }
+  .voice-play { width: 56px; height: 48px; }
+  .voice-slow { width: 44px; height: 44px; }
+  .voice-text { margin-top: 6px; font-size: 15px; }
+}

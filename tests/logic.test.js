@@ -249,3 +249,20 @@ test("lessonStars: 1 bintang karena selesai, +1 tanda bahaya lengkap, +1 tindaka
   assert.equal(CekLogic.lessonStars(lesson([], ["siapa"], false)), 1);
   assert.equal(CekLogic.lessonStars(undefined), 0);
 });
+
+test("materiStars: 1 bintang karena selesai, +1 minimal separuh benar, +1 semua benar", () => {
+  assert.equal(CekLogic.materiStars(0, 4), 1);
+  assert.equal(CekLogic.materiStars(2, 4), 2);
+  assert.equal(CekLogic.materiStars(3, 4), 2);
+  assert.equal(CekLogic.materiStars(4, 4), 3);
+});
+
+test("recordLesson: bintang terbaik disimpan, jadi tidak turun saat pelajaran diulang lebih buruk", () => {
+  const perfect = { found: ["siapa"], missed: [], extra: [], allCorrect: true };
+  const poor = { found: [], missed: ["siapa"], extra: [], allCorrect: false };
+  const first = CekLogic.recordLesson(CekLogic.emptyProgress(), "palsu", perfect, { correct: true });
+  const again = CekLogic.recordLesson(first, "palsu", poor, { correct: false });
+  assert.equal(CekLogic.lessonStars(again.lessons.palsu), 3);
+  assert.deepEqual(again.lessons.palsu.missed, ["siapa"], "rapor tetap memakai percobaan terakhir");
+  assert.equal(CekLogic.lessonStars({ found: [], missed: ["x"], extra: [], actionCorrect: false, bestStars: 99 }), 3, "nilai rusak dibatasi 3");
+});

@@ -8,6 +8,7 @@ const CekLogic = (() => {
   const XP_RIGHT_ACTION = 5;
   const XP_QUICK = 2; // per jawaban benar di Ronde Kilat
   const XP_MATERI = 2; // per jawaban benar di materi
+  const MAX_STARS = 3;
 
   /** @returns {{ xp: number, lessons: Object<string, object> }} */
   function emptyProgress() {
@@ -93,7 +94,7 @@ const CekLogic = (() => {
    */
   function recordLesson(progress, scenarioId, flagResult, actionResult, findResult) {
     const xp = lessonXp(flagResult, actionResult);
-    const lesson = {
+    const attempt = {
       found: flagResult.found,
       missed: flagResult.missed,
       extra: flagResult.extra,
@@ -101,6 +102,8 @@ const CekLogic = (() => {
       findMissed: findResult ? findResult.missed.length : 0,
       xp
     };
+    // Rapor memakai percobaan terakhir; bintang di peta memakai hasil terbaik, jadi tidak turun saat diulang.
+    const lesson = { ...attempt, bestStars: Math.max(lessonStars(attempt), lessonStars(progress.lessons[scenarioId])) };
     return {
       ...progress,
       xp: progress.xp + xp,
@@ -144,7 +147,17 @@ const CekLogic = (() => {
   function lessonStars(lesson) {
     if (!lesson) return 0;
     const flagsPerfect = lesson.missed.length === 0 && lesson.extra.length === 0;
-    return 1 + (flagsPerfect ? 1 : 0) + (lesson.actionCorrect ? 1 : 0);
+    const stars = 1 + (flagsPerfect ? 1 : 0) + (lesson.actionCorrect ? 1 : 0);
+    const best = Number.isInteger(lesson.bestStars) ? Math.min(lesson.bestStars, MAX_STARS) : 0; // data lama: tidak ada
+    return Math.max(stars, best);
+  }
+
+  /**
+   * Bintang materi di peta (1 sampai 3): 1 karena selesai, +1 kalau minimal separuh kuisnya benar,
+   * +1 kalau semuanya benar. right = skor terbaik, total = jumlah kuis (termasuk soal suara).
+   */
+  function materiStars(right, total) {
+    return 1 + (right * 2 >= total ? 1 : 0) + (right >= total ? 1 : 0);
   }
 
   // Pelajaran terbuka berurutan: yang pertama selalu terbuka.
@@ -262,6 +275,7 @@ const CekLogic = (() => {
     XP_QUICK,
     isDone,
     lessonStars,
+    materiStars,
     isUnlocked,
     currentIndex,
     buildReport,

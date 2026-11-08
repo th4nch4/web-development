@@ -1,15 +1,16 @@
 // Halaman rapor: ringkasan hasil belajar dari progres yang tersimpan di perangkat ini.
 (() => {
   const { el } = CekUI;
+  const { t } = CekLang;
   const progress = CekLogic.loadProgress(CekUI.getStorage());
   const report = CekLogic.buildReport(SCENARIOS, QUESTIONS, progress);
 
   function emptyState() {
     return el("section", { className: "done" }, [
       CekUI.mascot("think"),
-      el("h1", { text: "Rapormu masih kosong" }),
-      el("p", { text: "Selesaikan satu pelajaran dulu, nanti hasilnya muncul di sini." }),
-      el("a", { className: "btn", href: "index.html", text: "Mulai belajar" })
+      el("h1", { text: t("report.emptyTitle") }),
+      el("p", { text: t("report.emptyText") }),
+      el("a", { className: "btn", href: "index.html", text: t("report.start") })
     ]);
   }
 
@@ -20,18 +21,18 @@
     if (weak.length > MAX_FOCUS) return null;
     if (weak.length === 0 && report.findMissed > 0) {
       return el("div", { className: "callout" }, [
-        el("strong", { text: `${report.findMissed} bagian pesan mencurigakan sempat terlewat.` }),
-        el("p", { text: "Tanda bahayanya sudah kamu kenali, tapi saat membaca pesan masih ada yang kelewat. Ulangi pelajarannya, baca pelan-pelan." })
+        el("strong", { text: t("report.findMissed", { n: report.findMissed }) }),
+        el("p", { text: t("report.findMissedText") })
       ]);
     }
     if (weak.length === 0) {
       return el("div", { className: "callout callout-good" }, [
-        el("strong", { text: "Tidak ada tanda yang terlewat." }),
-        el("p", { text: "Pertahankan kebiasaan memeriksa sebelum klik." })
+        el("strong", { text: t("report.noneMissed") }),
+        el("p", { text: t("report.keepItUp") })
       ]);
     }
     return el("div", { className: "callout" }, [
-      el("span", { className: "callout-kicker", text: weak.length === 1 ? "Paling sering terlewat" : "Sama-sama paling sering terlewat" }),
+      el("span", { className: "callout-kicker", text: t(weak.length === 1 ? "report.mostMissed" : "report.mostMissedTie") }),
       el("ul", { className: "callout-list" }, weak.map((q) => el("li", {}, [
         el("strong", { text: q.title }),
         el("p", { text: q.hint })
@@ -43,8 +44,8 @@
   function questionRow(q) {
     const seen = q.found + q.missed;
     const summary = seen === 0
-      ? "Belum muncul di pelajaran yang kamu selesaikan."
-      : `Ditemukan ${q.found} dari ${seen} kali`;
+      ? t("report.notSeen")
+      : t("report.foundTimes", { found: q.found, seen });
     return el("li", { className: "q-row" }, [
       CekUI.questionIcon(q.id),
       el("div", {}, [
@@ -62,25 +63,25 @@
   function genuineNote() {
     if (report.genuineDone === 0) return null;
     const right = report.genuineDone - report.falseAlarms;
-    return el("p", { className: "note", text: `Pesan asli: ${right} dari ${report.genuineDone} kamu kenali dengan benar. Tidak semua pesan itu penipuan.` });
+    return el("p", { className: "note", text: t("report.genuine", { right, total: report.genuineDone }) });
   }
 
   function fullReport() {
     return [
-      el("h1", { className: "page-title", text: "Rapor kamu" }),
+      el("h1", { className: "page-title", text: t("report.title") }),
       el("div", { className: "stats" }, [
-        CekUI.stat("Total XP", String(report.xp)),
-        CekUI.stat("Pelajaran", `${report.doneCount}/${report.total}`),
-        CekUI.stat("Tindakan tepat", `${report.actionsCorrect}/${report.doneCount}`)
+        CekUI.stat(t("report.totalXp"), String(report.xp)),
+        CekUI.stat(t("report.lessons"), `${report.doneCount}/${report.total}`),
+        CekUI.stat(t("report.actions"), `${report.actionsCorrect}/${report.doneCount}`)
       ]),
       focusCard(),
-      el("h2", { className: "section-title", text: "5 Pertanyaan Sebelum Klik" }),
+      el("h2", { className: "section-title", text: t("report.questions") }),
       el("ol", { className: "q-list" }, report.perQuestion.map(questionRow)),
       genuineNote(),
       el("a", {
         className: "btn report-cta",
         href: "index.html",
-        text: report.doneCount < report.total ? "Lanjut belajar" : "Kembali ke jalur"
+        text: t(report.doneCount < report.total ? "report.continue" : "report.back")
       })
     ].filter(Boolean);
   }
@@ -89,4 +90,6 @@
   const root = document.getElementById("report");
   if (report.doneCount === 0) root.replaceChildren(emptyState());
   else root.replaceChildren(...fullReport());
+  // Dipulihkan dari cache Back/Forward: hasilnya bisa sudah berubah, jadi muat ulang.
+  window.addEventListener("pageshow", (event) => { if (event.persisted) location.reload(); });
 })();

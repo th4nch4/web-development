@@ -1,4 +1,5 @@
-// Bantuan tampilan yang dipakai semua halaman: membuat elemen, ikon, maskot, penyimpanan.
+// Bantuan tampilan yang dipakai semua halaman: membuat elemen, ikon, Coach Wall, lembar hasil, dialog, streak, penyimpanan.
+// Butuh js/coach.js (gambar Coach Wall) dan js/settings.js (pilihan konfeti).
 const CekUI = (() => {
   /**
    * Membuat elemen. Teks selalu lewat textContent, jadi aman dari HTML sisipan.
@@ -51,7 +52,26 @@ const CekUI = (() => {
     mic: '<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></g>',
     sticker: '<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-8-8h8z"/><path d="M8.5 14.5a4 4 0 0 0 7 0"/></g>',
     signal: '<g fill="currentColor"><rect x="2" y="15" width="3.5" height="5" rx="1"/><rect x="7.5" y="11.5" width="3.5" height="8.5" rx="1"/><rect x="13" y="8" width="3.5" height="12" rx="1"/><rect x="18.5" y="4" width="3.5" height="16" rx="1"/></g>',
-    wifi: '<g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2.5 9a14 14 0 0 1 19 0M6 12.5a9 9 0 0 1 12 0M9.5 16a4 4 0 0 1 5 0"/></g><circle cx="12" cy="19.2" r="1.6" fill="currentColor"/>'
+    wifi: '<g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2.5 9a14 14 0 0 1 19 0M6 12.5a9 9 0 0 1 12 0M9.5 16a4 4 0 0 1 5 0"/></g><circle cx="12" cy="19.2" r="1.6" fill="currentColor"/>',
+    // Lembar hasil, layar selesai, streak, soal suara, dan pengaturan.
+    cross: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
+    half: '<circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M12 4.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/>',
+    target: '<g fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.8"/></g><circle cx="12" cy="12" r="1.8" fill="currentColor"/>',
+    shield: '<g fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l7.5 2.7v6c0 5-3.3 8.6-7.5 10.2-4.2-1.6-7.5-5.2-7.5-10.2v-6z"/><path d="M8.4 12.2l2.5 2.5 4.8-4.9"/></g>',
+    fire: '<path class="fire-outer" fill="currentColor" d="M12 1.8c.7 3.2 2.7 5 4.5 6.9 1.9 2 3.2 4.2 3.2 6.9A7.7 7.7 0 0 1 12 23.3a7.7 7.7 0 0 1-7.7-7.7c0-3 1.5-5.3 3.2-6.8.3 1.8 1.1 3 2.4 3.7-.3-4.2.5-7.8 2.1-10.7z"/><path class="fire-inner" fill="currentColor" d="M12 12.3c1.7 1.9 3.8 3.4 3.8 5.9a3.8 3.8 0 0 1-7.6 0c0-2 1.3-3.3 2.3-4.4.3.8.8 1.4 1.5 1.6z"/>',
+    hook: '<g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4" r="2"/><path d="M14.5 6v9.5a5 5 0 0 1-10 0V12l3 3"/></g>',
+    speaker: '<path d="M3.5 9.2h3.8L12 5v14l-4.7-4.2H3.5z" fill="currentColor"/><path d="M15.5 8.8a4.5 4.5 0 0 1 0 6.4M18.3 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>',
+    turtle: '<path d="M4 15.5a7.5 6.6 0 0 1 15 0z" fill="currentColor"/><circle cx="20.6" cy="13.4" r="2.1" fill="currentColor"/><path d="M6.5 16.5v2.6M16.5 16.5v2.6M2.5 15.5h19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+    sliders: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h9M18 7h2M4 17h3M12 17h8"/><circle cx="15.5" cy="7" r="2.5"/><circle cx="9.5" cy="17" r="2.5"/></g>',
+    palette: '<path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-.9 2-1.9 0-1.4-1.2-1.7-1.2-3.1 0-1 .9-1.6 2-1.6H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="7.6" cy="11.4" r="1.5" fill="currentColor"/><circle cx="10.4" cy="7.4" r="1.5" fill="currentColor"/><circle cx="15" cy="7.6" r="1.5" fill="currentColor"/>',
+    globe: '<g fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/></g>',
+    monitor: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/></g>',
+    sun: '<circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+    moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/>',
+    trash: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4h5v2.5M6.5 6.5l1 14h9l1-14M10 10.5v6M14 10.5v6"/></g>',
+    // Roda gigi dari Feather Icons (lisensi MIT).
+    gear: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>',
+    home: '<path d="M3.5 11.5L12 4l8.5 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V20h4.5v-5h3v5H18v-9.5" fill="currentColor"/>'
   };
 
   function icon(name) {
@@ -63,102 +83,95 @@ const CekUI = (() => {
     return el("span", { className: `q-icon q-icon-${id}`, "aria-hidden": "true" }, icon(id));
   }
 
-  // Maskot "Lupi": kaca pembesar imut. Kacanya biru muda, mata besar berkilau, pipi merona, tangan, kaki, dan jambul.
-  // Hanya warna palet. Gagangnya ikut warna teks (currentColor) supaya terlihat di mode terang dan gelap.
-  // Gerakannya (melayang, berkedip, lompat, geleng) diatur di CSS lewat kelas mascot-<mood>.
-  // mood: happy | think | oops | cheer | sus (curiga, alis naik) | fish (memancing, untuk materi phishing)
-  const C = { french: "#3E4B8E", violet: "#3D1534", seashell: "#FFF4EB", wheat: "#F6E0B6", powder: "#A6BCC9" };
-  const limb = (d) => `<path d="${d}" fill="none" stroke="${C.french}" stroke-width="8" stroke-linecap="round"/>`;
-  const hand = (x, y) => `<circle cx="${x}" cy="${y}" r="5.5" fill="${C.french}"/>`;
-  const openEyes = (dx = 0, dy = 0) => `<g class="m-eyes">${[40, 64].map((x) => `
-      <ellipse cx="${x + dx}" cy="${57 + dy}" rx="8" ry="10" fill="${C.violet}"/>
-      <circle cx="${x + dx + 3}" cy="${52 + dy}" r="3.4" fill="${C.seashell}"/>
-      <circle cx="${x + dx - 2.6}" cy="${61.5 + dy}" r="1.6" fill="${C.seashell}"/>`).join("")}</g>`;
-  const MOODS = {
-    happy: {
-      arms: limb("M12 62Q3 54 5 42") + hand(5, 40) + limb("M92 62Q100 66 104 60") + hand(105, 59),
-      eyes: openEyes(),
-      mouth: `<path d="M45 69Q52 79 59 69Z" fill="${C.violet}" stroke="${C.violet}" stroke-width="2.5" stroke-linejoin="round"/>
-      <path d="M48.5 73.5q3.5 3 7 0" fill="${C.wheat}"/>`
-    },
-    think: {
-      arms: limb("M12 64Q5 74 11 82") + hand(11, 83) + limb("M92 64Q99 74 93 82") + hand(93, 83),
-      eyes: openEyes(3, -3),
-      mouth: `<path d="M46 71q6 4 11 -1" fill="none" stroke="${C.violet}" stroke-width="3.5" stroke-linecap="round"/>`
-    },
-    oops: {
-      arms: limb("M12 64Q4 72 7 82") + hand(7, 83) + limb("M92 64Q100 72 97 82") + hand(97, 83),
-      eyes: openEyes(),
-      mouth: `<ellipse cx="52" cy="73" rx="4.5" ry="5.5" fill="${C.violet}"/>
-      <path d="M83 26q-6 9 0 13q6 -4 0 -13z" fill="${C.seashell}" stroke="${C.french}" stroke-width="2"/>`
-    },
-    sus: {
-      arms: limb("M12 64Q4 70 14 76") + hand(15, 77) + limb("M92 60Q100 50 92 42") + hand(91, 41),
-      eyes: `<g class="m-eyes">
-      <ellipse cx="40" cy="59" rx="8" ry="6" fill="${C.violet}"/><circle cx="43" cy="57" r="2.4" fill="${C.seashell}"/>
-      <ellipse cx="64" cy="57" rx="8" ry="9" fill="${C.violet}"/><circle cx="67" cy="53" r="3" fill="${C.seashell}"/></g>
-      <path d="M31 50l17 3" stroke="${C.violet}" stroke-width="4" stroke-linecap="round"/>
-      <path d="M56 42q8 -6 16 0" fill="none" stroke="${C.violet}" stroke-width="4" stroke-linecap="round"/>`,
-      mouth: `<path d="M46 72l13 -2" fill="none" stroke="${C.violet}" stroke-width="3.5" stroke-linecap="round"/>`
-    },
-    fish: {
-      arms: limb("M12 62Q3 54 5 42") + hand(5, 40) + limb("M92 64Q98 56 100 48") + hand(100, 47)
-        + `<path d="M100 47L116 6" stroke="${C.violet}" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M116 6Q122 30 118 52" fill="none" stroke="${C.french}" stroke-width="1.5" stroke-dasharray="3 3"/>
-        <path d="M118 52q0 7 -5 6" fill="none" stroke="${C.violet}" stroke-width="2.5" stroke-linecap="round"/>`,
-      eyes: openEyes(2, 0),
-      mouth: `<path d="M45 69Q52 79 59 69Z" fill="${C.violet}" stroke="${C.violet}" stroke-width="2.5" stroke-linejoin="round"/>`
-    },
-    cheer: {
-      arms: limb("M12 52Q2 40 8 24") + hand(8, 22) + limb("M92 52Q102 40 96 24") + hand(96, 22),
-      eyes: `<path d="M32 59q8 -11 16 0M56 59q8 -11 16 0" fill="none" stroke="${C.violet}" stroke-width="4.5" stroke-linecap="round"/>`,
-      mouth: `<path d="M41 67Q52 85 63 67Z" fill="${C.violet}" stroke="${C.violet}" stroke-width="2.5" stroke-linejoin="round"/>
-      <path d="M46 74q6 5 12 0" fill="${C.wheat}"/>`
-    }
-  };
-
+  /**
+   * Coach Wall (gambar dari js/coach.js) dalam satu suasana hati. Hanya hiasan untuk pembaca layar.
+   * mood: happy | think | sus | cheer | love | sad | oops | close | teach
+   */
   function mascot(mood = "happy") {
-    const look = MOODS[mood] || MOODS.happy;
-    const svg = `<svg viewBox="0 0 120 120"><g class="m-body">
-      <line x1="84" y1="86" x2="106" y2="108" stroke="currentColor" stroke-width="13" stroke-linecap="round"/>
-      <ellipse cx="38" cy="99" rx="11" ry="6.5" fill="${C.french}"/>
-      <ellipse cx="64" cy="100" rx="11" ry="6.5" fill="${C.french}"/>
-      ${look.arms}
-      <path d="M49 14C45 2 61 -1 60 8" fill="none" stroke="${C.french}" stroke-width="4.5" stroke-linecap="round"/>
-      <circle cx="52" cy="56" r="43" fill="${C.french}"/>
-      <circle cx="52" cy="56" r="33" fill="${C.powder}"/>
-      <path d="M29 44a26 26 0 0 1 12 -14" fill="none" stroke="${C.seashell}" stroke-width="5" stroke-linecap="round"/>
-      <circle cx="76" cy="36" r="2.6" fill="${C.seashell}"/>
-      <ellipse cx="28" cy="70" rx="7" ry="4.5" fill="${C.wheat}"/>
-      <ellipse cx="76" cy="70" rx="7" ry="4.5" fill="${C.wheat}"/>
-      ${look.eyes}
-      ${look.mouth}
-    </g></svg>`;
-    return el("span", { className: `mascot mascot-${mood}`, "aria-hidden": "true", html: svg });
+    return el("span", { className: `mascot mascot-${mood}`, "aria-hidden": "true", html: CekCoach.svg(mood) });
   }
 
-  // Hiasan perayaan: potongan kertas warna palet yang jatuh (disembunyikan kalau gerak dikurangi).
+  const TIP_MS = 3200;
+
+  /**
+   * Coach Wall yang bisa diketuk: membal, lalu memberi satu tips (bergiliran) di gelembung di atasnya.
+   * tipsKey: daftar tips di js/strings.js. Tipsnya umum, tidak pernah membocorkan jawaban soal.
+   */
+  function coach(mood, tipsKey) {
+    const tips = CekLang.list(tipsKey);
+    const bubble = el("span", { className: "coach-tip", role: "status" });
+    let shown = 0;
+    let hideTimer = null;
+    const button = el("button", { type: "button", className: "coach-btn", "aria-label": CekLang.t("coach.tap") }, mascot(mood));
+    button.addEventListener("click", () => {
+      bubble.textContent = tips[shown % tips.length];
+      shown += 1;
+      const face = button.querySelector(".mascot");
+      face.classList.remove("is-poked");
+      void face.offsetWidth; // mulai ulang animasi membal
+      face.classList.add("is-poked");
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => { bubble.textContent = ""; }, TIP_MS);
+    });
+    return el("span", { className: "coach-wrap" }, [button, bubble]);
+  }
+
+  // Hiasan perayaan: potongan kertas yang jatuh. Bisa dimatikan di Pengaturan; disembunyikan kalau gerak dikurangi.
   function confetti() {
-    const colors = ["var(--french)", "var(--wheat)", "var(--powder)", "var(--violet)"];
-    return el("div", { className: "confetti", "aria-hidden": "true" }, Array.from({ length: 28 }, (_, i) => el("i", {
-      style: `left:${(i * 37) % 100}%;background:${colors[i % colors.length]};animation-delay:${(i % 7) * 0.12}s;--spin:${(i % 5) * 90}deg`
+    if (!CekSettings.confettiOn()) return null;
+    const colors = ["var(--green)", "var(--yellow)", "var(--fire-blue)", "var(--fire-pink)", "var(--french)", "var(--wheat)"];
+    return el("div", { className: "confetti", "aria-hidden": "true" }, Array.from({ length: 36 }, (_, i) => el("i", {
+      style: `left:${(i * 37) % 100}%;background:${colors[i % colors.length]};animation-delay:${(i % 9) * 0.11}s;--spin:${(i % 5) * 90}deg`
     })));
   }
 
-  function renderCoach(container, text, mood) {
-    container.replaceChildren(
-      el("div", { className: "coach" }, [mascot(mood), el("p", { className: "coach-bubble", text })])
-    );
+  /**
+   * Ekspresi Coach Wall setelah pemain menjawab.
+   * tone: "good" (benar), "partial" (hampir: sebagian benar di soal pilih banyak), "bad" (salah).
+   */
+  function reaction(tone, streak = 0) {
+    if (tone === "partial") return "close";
+    if (tone !== "good") return "sad";
+    return streak >= 3 ? "love" : "cheer";
+  }
+
+  const pick = (list) => list[Math.floor(Math.random() * list.length)];
+  const TONE = {
+    good: { cheers: "feedback.cheers", icon: "check" },
+    partial: { cheers: "feedback.close", icon: "half" },
+    bad: { cheers: "feedback.oops", icon: "cross" }
+  };
+
+  /**
+   * Isi lembar hasil ala Duolingo: Coach Wall bereaksi, seruan (+XP, combo), judul hasil, satu kalimat penjelasan.
+   * cheer: celetukan khusus; kosong = seruan acak. mood: paksa ekspresi tertentu (mis. "oops" saat waktu habis).
+   */
+  function feedback({ tone, heading, text, cheer = "", xp = 0, streak = 0, mood = reaction(tone, streak) }) {
+    const t = CekLang.t;
+    const look = TONE[tone] || TONE.bad;
+    return [
+      mascot(mood),
+      el("div", { className: "feedback-body" }, [
+        el("p", { className: cheer ? "feedback-cheer is-quip" : "feedback-cheer" }, [
+          cheer || pick(CekLang.list(look.cheers)),
+          tone === "good" && xp > 0 && el("span", { className: "xp-pop", text: `+${xp} XP` }),
+          tone === "good" && streak >= 2 && el("span", { className: "combo" }, [icon("fire"), t("feedback.combo", { n: streak })])
+        ]),
+        el("h2", {}, [icon(look.icon), heading]),
+        el("p", { text })
+      ])
+    ];
   }
 
   function xpChip(xp) {
     return el("span", { className: "xp-chip", "aria-label": `${xp} XP` }, [icon("bolt"), `${xp} XP`]);
   }
 
-  function stat(label, value) {
-    return el("div", { className: "stat" }, [
+  /** Kotak angka di layar selesai. iconName dan tone (gold, green, blue, orange) opsional. */
+  function stat(label, value, iconName, tone) {
+    return el("div", { className: tone ? `stat stat-${tone}` : "stat" }, [
       el("span", { className: "stat-label", text: label }),
-      el("span", { className: "stat-value", text: value })
+      el("span", { className: "stat-value" }, [iconName && icon(iconName), el("span", { text: value })])
     ]);
   }
 
@@ -175,5 +188,132 @@ const CekUI = (() => {
     }
   }
 
-  return { el, icon, questionIcon, mascot, confetti, renderCoach, xpChip, stat, getStorage };
+  // ---------- Dialog buatan sendiri (pengganti confirm() bawaan browser) ----------
+
+  let dialogCount = 0;
+  const SETTLE_MS = 400;
+
+  /** Buka <dialog> dan catat waktunya; ketukan latar baru berlaku setelah SETTLE_MS. */
+  function openModal(dialog) {
+    dialog.dataset.openedAt = String(performance.now());
+    dialog.showModal();
+  }
+
+  function settled(dialog) {
+    return performance.now() - Number(dialog.dataset.openedAt || 0) > SETTLE_MS;
+  }
+
+  /**
+   * Jendela tanya di tengah layar memakai <dialog> (fokus terkunci di dalam, Esc menutup).
+   * Tombol besar = pilihan aman (stay); tombol teks = pilihan berisiko (leave).
+   * @returns {Promise<boolean>} true kalau pemain memilih "leave"
+   */
+  function ask({ title, text, mood = "sad", stay, leave }) {
+    dialogCount += 1;
+    const id = `ask-${dialogCount}`;
+    const stayButton = el("button", { type: "button", className: "btn", text: stay });
+    const leaveButton = el("button", { type: "button", className: "btn-text-danger", text: leave });
+    const dialog = el("dialog", { className: "cek-dialog", "aria-labelledby": `${id}-title`, "aria-describedby": `${id}-text` },
+      el("div", { className: "cek-dialog-body" }, [
+        mascot(mood),
+        el("h2", { id: `${id}-title`, text: title }),
+        el("p", { id: `${id}-text`, text }),
+        el("div", { className: "cek-dialog-actions" }, [stayButton, leaveButton])
+      ]));
+    stayButton.addEventListener("click", () => dialog.close("stay"));
+    leaveButton.addEventListener("click", () => dialog.close("leave"));
+    // Ketukan di luar kotak (latar gelap) = batal, kecuali tepat setelah dibuka
+    // (klik kedua dari klik ganda di tombol X jangan langsung menutupnya).
+    dialog.addEventListener("click", (event) => { if (event.target === dialog && settled(dialog)) dialog.close("stay"); });
+    return new Promise((resolve) => {
+      dialog.addEventListener("close", () => {
+        dialog.remove();
+        resolve(dialog.returnValue === "leave");
+      }, { once: true });
+      document.body.append(dialog);
+      openModal(dialog);
+      stayButton.focus();
+    });
+  }
+
+  let sessionActive = () => false;
+
+  /** Tombol X di bar atas halaman soal: tanya dulu lewat dialog kalau sesinya masih berjalan. */
+  function guardExit(isActive) {
+    sessionActive = isActive;
+    const link = document.querySelector(".lesson-top a.icon-btn");
+    if (!link) return;
+    link.addEventListener("click", (event) => {
+      if (!isActive()) return;
+      event.preventDefault();
+      const t = CekLang.t;
+      ask({ mood: "sad", title: t("exit.title"), text: t("exit.text"), stay: t("exit.stay"), leave: t("exit.leave") })
+        .then((leave) => { if (leave) location.href = link.href; });
+    });
+  }
+
+  // ---------- Streak: jawaban benar beruntun, ditampilkan sebagai api di bar atas ----------
+  // Disimpan terpisah dari progres supaya tetap jalan antar pelajaran, materi, dan Ronde Kilat.
+
+  const STREAK_KEY = "cekdulu.streak";
+  let memoryStreak = 0; // cadangan kalau penyimpanan diblokir
+
+  function streakValue() {
+    try {
+      const value = Number.parseInt(window.localStorage.getItem(STREAK_KEY), 10);
+      return Number.isFinite(value) && value > 0 ? value : 0;
+    } catch (error) {
+      return memoryStreak;
+    }
+  }
+
+  function saveStreak(value) {
+    memoryStreak = value;
+    try {
+      if (value > 0) window.localStorage.setItem(STREAK_KEY, String(value));
+      else window.localStorage.removeItem(STREAK_KEY);
+    } catch (error) {
+      // Penyimpanan diblokir: streak hanya berlaku selama halaman terbuka.
+    }
+  }
+
+  // 1-2 oranye, 3-4 biru, 5 ke atas pink, 0 abu-abu.
+  function streakTier(value) {
+    if (value >= 5) return "pink";
+    if (value >= 3) return "blue";
+    return value >= 1 ? "orange" : "off";
+  }
+
+  function renderStreak(value, effect) {
+    const slot = document.getElementById("streak");
+    if (!slot) return;
+    const chip = el("span", {
+      className: `streak streak-${streakTier(value)}${effect ? ` ${effect}` : ""}`,
+      role: "img",
+      "aria-label": CekLang.t("streak.label", { n: value })
+    }, [icon("fire"), el("span", { text: String(value) })]);
+    slot.replaceChildren(chip);
+  }
+
+  /** Catat satu jawaban: benar menambah streak, salah atau hampir mengembalikannya ke 0. */
+  function recordStreak(isRight) {
+    const before = streakValue();
+    const value = isRight ? before + 1 : 0;
+    saveStreak(value);
+    const levelUp = value > before && streakTier(value) !== streakTier(before);
+    renderStreak(value, levelUp ? "is-levelup" : value > 0 ? "is-bump" : "");
+    return value;
+  }
+
+  function resetStreak() {
+    saveStreak(0);
+    renderStreak(0);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => renderStreak(streakValue()));
+
+  return {
+    el, icon, questionIcon, mascot, coach, reaction, feedback, confetti, xpChip, stat, getStorage,
+    ask, openModal, settled, guardExit, isSessionActive: () => sessionActive(), streakValue, recordStreak, resetStreak
+  };
 })();

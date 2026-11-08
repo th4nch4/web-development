@@ -29,7 +29,7 @@
   - "action" Kalau kamu, bakal ngapain? (selalu terakhir)
   Setiap pelajaran wajib punya "flags" atau "match".
 
-  lupi:     { intro, good, bad }  -> celetukan Lupi: intro di soal pertama (jangan bocorkan jawaban),
+  coach:    { intro, good, bad }  -> celetukan Coach Wall: intro di soal pertama (jangan bocorkan jawaban),
                                      good/bad setelah soal pertama dinilai
   linkQuiz: { question, options: [{ text, correct }], why }   -> tepat satu option benar
   reply:    { prompt, words: [...], extra: [...], why }       -> words = jawaban urut, extra = kata pengecoh
@@ -45,7 +45,7 @@ const UNITS = [
 const SCENARIOS = [
   {
     id: "undangan-apk",
-    lupi: { intro: "Ada undangan nikahan dari nomor baru. Kondangan atau curiga dulu?", good: "Undangan asli nggak perlu di-install. Nikahannya bukan di Play Store!", bad: "Hampir ke-install tuh! Untung cuma latihan." },
+    coach: { intro: "Ada undangan nikahan dari nomor baru. Kondangan atau curiga dulu?", good: "Undangan asli nggak perlu di-install. Nikahannya bukan di Play Store!", bad: "Hampir ke-install tuh! Untung cuma latihan." },
     unit: 1,
     icon: "invite", // ikon level di peta beranda
     title: "Undangan pernikahan",
@@ -57,7 +57,7 @@ const SCENARIOS = [
     },
     messages: [
       ["Assalamualaikum Kak, kami mengundang Kakak ke acara pernikahan kami."],
-      ["Undangan lengkapnya ada di file ini ya. ", { text: "Mohon segera dibuka", flag: "buru" }, "."]
+      [{ text: "Undangan lengkapnya ada di file ini ya", flag: "file" }, ". ", { text: "Mohon segera dibuka", flag: "buru" }, "."]
     ],
     attachment: {
       name: "Undangan Pernikahan.apk",
@@ -68,7 +68,7 @@ const SCENARIOS = [
     flags: ["siapa", "file", "buru"],
     verdict: "Ini penipuan. Undangan dikirim sebagai aplikasi .apk oleh nomor yang tidak kamu kenal.",
     evidence: {
-      siapa: "Nomor tidak dikenal mengaku mengundangmu, tanpa menyebut nama.",
+      siapa: "Nomornya tidak tersimpan di kontakmu dan tanpa foto profil, tapi mengaku mengundangmu.",
       file: "Undangannya berbentuk file .apk. Itu aplikasi, bukan undangan.",
       buru: "\"Mohon segera dibuka\" dipakai supaya kamu tidak sempat berpikir."
     },
@@ -78,14 +78,14 @@ const SCENARIOS = [
     },
     actions: [
       { label: "Buka file undangannya", correct: false, why: "File .apk akan meng-install aplikasi. Aplikasi seperti ini bisa membaca SMS, termasuk kode OTP bankmu." },
-      { label: "Jangan dibuka. Tanya kenalan bersama lewat telepon", correct: true, why: "Kalau undangannya asli, kenalanmu pasti tahu. Kamu memastikan lewat jalur lain, bukan lewat pesan itu." },
+      { label: "Jangan dibuka. Tanya teman atau keluarga apakah ada yang mau menikah", correct: true, why: "Kalau undangannya asli, orang terdekatmu kemungkinan tahu. Kamu memastikan lewat jalur lain, bukan lewat pesan itu." },
       { label: "Blokir dan laporkan nomornya", correct: true, why: "Nomor tak dikenal yang mengirim file aplikasi tidak perlu ditanggapi." }
     ],
     takeaway: "Undangan, foto paket, dan surat tilang tidak pernah berbentuk file .apk. Kalau diminta meng-install sesuatu, berhenti."
   },
   {
     id: "pesanan-dikirim",
-    lupi: { intro: "Kemarin kamu beli sepatu, terus notif ini muncul. Curiga atau santai?", good: "Sip! Nggak semua notif itu jebakan.", bad: "Santai, ini notif biasa dari aplikasi yang kamu pakai sendiri." },
+    coach: { intro: "Kemarin kamu beli sepatu, terus notif ini muncul. Curiga atau santai?", good: "Sip! Nggak semua notif itu jebakan.", bad: "Santai, ini notif biasa dari aplikasi yang kamu pakai sendiri." },
     unit: 1,
     icon: "truck",
     title: "Pesanan dikirim",
@@ -116,7 +116,7 @@ const SCENARIOS = [
   },
   {
     id: "paket-tertahan",
-    lupi: { intro: "Paketmu katanya nyangkut di gudang. Kurirnya SMS sendiri, nih.", good: "Mantap, nggak kepancing ongkir receh!", bad: "Ongkirnya receh, tapi yang diincar data kartumu!" },
+    coach: { intro: "Paketmu katanya nyangkut di gudang. Kurirnya SMS sendiri, nih.", good: "Mantap, nggak kepancing ongkir receh!", bad: "Ongkirnya receh, tapi yang diincar data kartumu!" },
     unit: 1,
     icon: "box",
     title: "Paket tertahan",
@@ -147,7 +147,7 @@ const SCENARIOS = [
       siapa: "Dikirim dari nomor HP pribadi, padahal mengaku ekspedisi.",
       link: "Alamatnya lintang-paket-update.top, bukan ekspedisilintang.co.id.",
       buru: "\"Dikembalikan dalam 2 jam\" dipakai supaya kamu langsung membayar.",
-      minta: "Kamu diminta mengisi data dan membayar lewat link. Yang dicuri bukan Rp12.500, tapi data kartumu."
+      minta: "Kamu diminta mengisi data dan membayar lewat link. Yang diincar bukan Rp12.500, tapi data kartu atau akun bankmu."
     },
     clear: {
       file: "Pesan ini tidak membawa file. Bahayanya ada di link."
@@ -171,7 +171,7 @@ const SCENARIOS = [
   },
   {
     id: "akun-bank-diblokir",
-    lupi: { intro: "Pagi-pagi udah dapet email dari \"bank\". Ngopi dulu, terus cek baik-baik!", good: "Detektif level bank! Satu huruf nyamar pun ketahuan.", bad: "Penipunya cuma ganti satu huruf. Licik, ya?" },
+    coach: { intro: "Pagi-pagi udah dapet email dari \"bank\". Ngopi dulu, terus cek baik-baik!", good: "Detektif level bank! Satu huruf nyamar pun ketahuan.", bad: "Penipunya cuma ganti satu huruf. Licik, ya?" },
     unit: 1,
     icon: "bank",
     title: "Akun bank diblokir",
@@ -184,7 +184,7 @@ const SCENARIOS = [
     },
     subject: "[PENTING] Akun Anda diblokir sementara",
     messages: [
-      ["Yth. Nasabah, kami mendeteksi aktivitas mencurigakan pada akun Anda."],
+      ["Kepada Nasabah yang terhormat, berikut informasi tentang akun Anda."],
       [{ text: "Akun akan ditutup permanen dalam 24 jam", flag: "buru" }, " jika tidak segera diverifikasi."],
       [{ text: "Silakan masuk dan masukkan PIN serta kode OTP Anda", flag: "minta" }, " melalui tombol di bawah ini."],
       [{
@@ -225,7 +225,7 @@ const SCENARIOS = [
   },
   {
     id: "teman-minta-kode",
-    lupi: { intro: "Dimas tiba-tiba chat minta tolong. Temen sendiri, sih... tapi cek dulu!", good: "Temen beneran nggak bakal minta kode OTP-mu.", bad: "Kode itu kunci akunmu. Dimas pun nggak boleh tahu!" },
+    coach: { intro: "Dimas tiba-tiba chat minta tolong. Temen sendiri, sih... tapi cek dulu!", good: "Temen beneran nggak bakal minta kode OTP-mu.", bad: "Kode itu kunci akunmu. Dimas pun nggak boleh tahu!" },
     unit: 2,
     icon: "chat",
     title: "Teman minta kode",
@@ -253,7 +253,7 @@ const SCENARIOS = [
     },
     actions: [
       { label: "Kirim kodenya, kasihan Dimas", correct: false, why: "Kode itu untuk masuk ke akunmu. Kalau dikirim, akunmu yang diambil alih, lalu dipakai menipu teman-temanmu." },
-      { label: "Telepon Dimas langsung untuk memastikan", correct: true, why: "Telepon atau bertemu langsung adalah jalur yang tidak bisa dipalsukan lewat akun chat." },
+      { label: "Telepon Dimas lewat telepon biasa, bukan lewat aplikasi chat", correct: true, why: "Kalau akun chatnya dibajak, panggilan di aplikasi itu bisa diangkat penipu. Telepon biasa ke nomor yang kamu simpan, atau bertemu langsung, jauh lebih sulit dipalsukan." },
       { label: "Jangan kirim, lalu kabari teman lain bahwa akun Dimas mungkin dibajak", correct: true, why: "Kamu melindungi dirimu dan teman lain yang mungkin juga dimintai kode." }
     ],
     takeaway: "Kode OTP adalah kunci akunmu sendiri. Siapa pun yang memintanya, entah teman, keluarga, atau petugas, jangan diberikan.",
@@ -267,7 +267,7 @@ const SCENARIOS = [
   },
   {
     id: "kode-otp-asli",
-    lupi: { intro: "Kamu baru aja login, terus SMS ini masuk. Aman atau jebakan?", good: "Betul! Kodenya buat kamu pakai sendiri.", bad: "Santai, kode ini memang kamu sendiri yang minta." },
+    coach: { intro: "Kamu baru aja login, terus SMS ini masuk. Aman atau jebakan?", good: "Betul! Kodenya buat kamu pakai sendiri.", bad: "Santai, kode ini memang kamu sendiri yang minta." },
     unit: 2,
     icon: "key",
     title: "Kode OTP",
@@ -275,7 +275,7 @@ const SCENARIOS = [
     context: "Kamu baru saja menekan tombol Masuk di aplikasi Bank Arunika di HP-mu sendiri.",
     sender: {
       name: "ARUNIKA",
-      detail: "Nama pengirim resmi yang sama dengan SMS bank sebelumnya. Kode ini datang tepat setelah kamu menekan Masuk."
+      detail: "Nama pengirim bank. Nama seperti ini bisa dipalsukan, tapi kode ini datang tepat setelah kamu sendiri menekan Masuk."
     },
     messages: [
       ["Kode OTP Anda: 739204. Berlaku 3 menit. JANGAN berikan kode ini kepada siapa pun, termasuk petugas bank."]
@@ -284,7 +284,7 @@ const SCENARIOS = [
     verdict: "Ini pesan asli. Kamu sendiri yang meminta kode ini, dan pesannya tidak meminta apa pun darimu.",
     evidence: {},
     clear: {
-      siapa: "Pengirimnya nama resmi bank yang biasa, dan kodenya datang tepat setelah kamu menekan Masuk.",
+      siapa: "Nama pengirim bisa dipalsukan, tapi kode ini datang tepat setelah kamu sendiri menekan Masuk, dan pesannya tidak meminta apa pun.",
       buru: "Batas 3 menit itu wajar untuk kode OTP. Pesannya tidak mengancam atau memaksamu.",
       minta: "Pesan ini tidak meminta apa pun. Justru mengingatkan agar kode tidak diberikan."
     },
@@ -301,7 +301,7 @@ const SCENARIOS = [
 // scam: true = penipuan. why = penjelasan singkat setelah menjawab.
 const QUICK_ROUND = [
   { unit: 1, sender: "+62 813-0000-4410", app: "SMS", text: "Paket Anda gagal dikirim. Bayar ongkir ulang di lintang-kirim.xyz hari ini.", scam: true, why: "Nomor pribadi, link aneh, dan minta bayar. Cek resi di aplikasi resmi saja." },
-  { unit: 1, sender: "Mama", app: "Chat", text: "Nak, nanti pulang sekalian beli telur ya.", scam: false, why: "Kontak tersimpan, tidak ada link, tidak minta data atau uang." },
+  { unit: 1, sender: "Mama", app: "Chat", text: "Nak, nanti pulang sekalian beli telur ya.", scam: false, why: "Tidak ada link, tidak minta data atau uang. Permintaannya biasa saja." },
   { unit: 1, sender: "+62 821-0000-9031", app: "Chat", text: "Selamat! Kamu menang undian Rp50 juta. Klaim sebelum jam 12 di rimbun-hadiah.site", scam: true, why: "Hadiah yang tidak pernah kamu ikuti, batas waktu, dan link aneh." },
   { unit: 1, sender: "Pasar Rimbun", app: "Notifikasi", text: "Flash sale mulai jam 12.00. Cek di halaman Promo aplikasi.", scam: false, why: "Dari aplikasi resmi, tidak ada link, tidak minta apa pun." },
   { unit: 1, sender: "Info Tilang", app: "SMS", text: "Anda terkena tilang elektronik. Lihat bukti di file Surat_Tilang.apk", scam: true, why: "Surat tilang tidak pernah berbentuk file .apk." },

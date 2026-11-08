@@ -1,6 +1,7 @@
 // Menggambar HP simulasi dari data skenario (chat, sms, email, atau notifikasi).
 const CekPhone = (() => {
   const { el } = CekUI;
+  const { t } = CekLang;
 
   function initial(name) {
     return /^[A-Za-z]/.test(name) ? name[0].toUpperCase() : "#";
@@ -47,10 +48,10 @@ const CekPhone = (() => {
 
   function senderTap(scenario, piece) {
     const { sender } = scenario;
-    return piece(`Pengirim: ${sender.name}`, sender.flag, "tap-sender", sender.name);
+    return piece(t("phone.sender", { name: sender.name }), sender.flag, "tap-sender", sender.name);
   }
 
-  const TIME = "09.41";
+  const TIME = t("phone.time");
   const glyph = (name, className) => el("span", { className: `glyph ${className || ""}`, "aria-hidden": "true" }, CekUI.icon(name));
 
   // Jam kecil di pojok gelembung, seperti di WhatsApp.
@@ -62,7 +63,7 @@ const CekPhone = (() => {
   // Tampilan WhatsApp di iPhone: header terang, wallpaper bermotif, gelembung berekor, bar ketik.
   function renderChat(s, piece) {
     const file = s.attachment && withMeta(el("div", { className: "bubble bubble-file" }, [
-      piece(`File: ${s.attachment.name}`, s.attachment.flag, "tap-file", [
+      piece(t("phone.file", { name: s.attachment.name }), s.attachment.flag, "tap-file", [
         el("span", { className: "file-icon", "aria-hidden": "true", text: fileExtension(s.attachment.name) }),
         el("span", { className: "file-meta" }, [
           el("strong", { text: s.attachment.name }),
@@ -79,14 +80,14 @@ const CekPhone = (() => {
         glyph("phone", "chat-action")
       ]),
       el("div", { className: "app-body chat-body" }, [
-        el("p", { className: "date-chip", "aria-hidden": "true", text: "Hari ini" }),
+        el("p", { className: "date-chip", "aria-hidden": "true", text: t("phone.today") }),
         s.notice && el("p", { className: "system-notice" }, plainText(s.notice, piece)),
         ...scenarioBubbles(s, piece, "bubble").map((bubble) => withMeta(bubble)),
         file
       ]),
       el("div", { className: "chat-input", "aria-hidden": "true" }, [
         glyph("plus"),
-        el("span", { className: "chat-field" }, ["Ketik pesan", glyph("sticker")]),
+        el("span", { className: "chat-field" }, [t("phone.typeMessage"), glyph("sticker")]),
         glyph("camera"),
         glyph("mic")
       ])
@@ -104,24 +105,24 @@ const CekPhone = (() => {
         ])
       ]),
       el("div", { className: "app-body sms-body" }, [
-        el("p", { className: "sms-stamp", "aria-hidden": "true" }, [el("strong", { text: "Pesan Teks" }), ` · Hari ini ${TIME}`]),
+        el("p", { className: "sms-stamp", "aria-hidden": "true" }, [el("strong", { text: t("phone.textMessage") }), ` · ${t("phone.todayAt", { time: TIME })}`]),
         ...scenarioBubbles(s, piece, "bubble")
       ]),
       el("div", { className: "chat-input sms-input", "aria-hidden": "true" }, [
         glyph("plus"),
-        el("span", { className: "chat-field", text: "Pesan Teks" })
+        el("span", { className: "chat-field", text: t("phone.textMessage") })
       ])
     ];
   }
 
   function renderEmail(s, piece) {
     return [
-      el("div", { className: "app-header email-header" }, [glyph("chevron", "chat-back"), "Kotak Masuk"]),
+      el("div", { className: "app-header email-header" }, [glyph("chevron", "chat-back"), t("phone.inbox")]),
       el("div", { className: "app-body email-body" }, [
         el("h3", { className: "email-subject", text: s.subject }),
         el("div", { className: "email-from" }, [
           el("span", { className: "avatar", "aria-hidden": "true", text: initial(s.sender.name) }),
-          el("div", {}, [senderTap(s, piece), el("small", { text: s.sender.address || "kepada saya" })])
+          el("div", {}, [senderTap(s, piece), el("small", { text: s.sender.address || t("phone.toMe") })])
         ]),
         ...scenarioBubbles(s, piece, "email-paragraph")
       ])
@@ -132,12 +133,12 @@ const CekPhone = (() => {
     return [
       el("div", { className: "lock-screen" }, [
         el("p", { className: "lock-time", text: TIME }),
-        el("p", { className: "lock-date", text: "Kamis, 5 November" }),
+        el("p", { className: "lock-date", text: t("phone.lockDate") }),
         el("div", { className: "notif-card" }, [
           el("div", { className: "notif-top" }, [
             el("span", { className: "app-icon", "aria-hidden": "true", text: initial(s.sender.name) }),
             senderTap(s, piece),
-            el("small", { text: "sekarang" })
+            el("small", { text: t("phone.now") })
           ]),
           el("strong", { className: "notif-title", text: s.subject }),
           ...scenarioBubbles(s, piece, "notif-text")
@@ -150,7 +151,7 @@ const CekPhone = (() => {
 
   /** @param {object} scenario */
   function render(scenario) {
-    return el("div", { className: `phone phone-${scenario.app}`, role: "group", "aria-label": "HP simulasi" }, [
+    return el("div", { className: `phone phone-${scenario.app}`, role: "group", "aria-label": t("phone.label") }, [
       el("div", { className: "screen" }, [
         el("div", { className: "status-bar", "aria-hidden": "true" }, [
           el("span", { className: "status-time", text: TIME }),

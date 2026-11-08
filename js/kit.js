@@ -1,18 +1,15 @@
 // Bagian umum halaman soal (pelajaran dan materi): tombol utama, lembar hasil ala Duolingo,
-// soal dengan Lupi, dan pilihan jawaban. Dipakai js/engine.js dan js/materi.js.
+// soal dengan Coach Wall, dan pilihan jawaban. Dipakai js/engine.js dan js/belajar.js.
 const CekKit = (() => {
   const { el } = CekUI;
+  const { t } = CekLang;
   const COOLDOWN_MS = 500;
-
-  // Kata-kata seru di lembar hasil, dipilih acak supaya tidak monoton.
-  const CHEERS = ["Mantap!", "Keren!", "Jeli banget!", "Gokil!", "Pinter!"];
-  const OOPS = ["Hampir!", "Yah, kelewat.", "Santai, belajar dulu.", "Nggak apa-apa!"];
-  const pick = (list) => list[Math.floor(Math.random() * list.length)];
+  const SOUND_OF = { good: "good", partial: "close", bad: "bad" };
 
   // Label status setelah dinilai. Ditulis sebagai teks sungguhan supaya dibacakan pembaca layar.
   const STATUS_LABELS = {
-    found: "Benar", correct: "Benar", answer: "Lebih aman",
-    missed: "Terlewat", extra: "Keliru", wrong: "Kurang tepat", retry: "Sempat salah"
+    found: t("status.found"), correct: t("status.correct"), answer: t("status.answer"),
+    missed: t("status.missed"), extra: t("status.extra"), wrong: t("status.wrong"), retry: t("status.retry")
   };
 
   // Salinan acak (Fisher-Yates); data aslinya tidak diubah.
@@ -32,16 +29,45 @@ const CekKit = (() => {
   }
 
   /**
+   * Nada hasil soal pilih banyak: semua benar = "good" (hijau), sebagian benar = "partial" (kuning, hampir),
+   * tidak ada yang benar = "bad" (merah).
+   * @param {{ allCorrect: boolean, found: Array }} result
+   */
+  function toneOf(result) {
+    if (result.allCorrect) return "good";
+    return result.found.length > 0 ? "partial" : "bad";
+  }
+
+  /**
    * @param {{ lesson: HTMLElement, task: HTMLElement, footer: HTMLElement, feedback: HTMLElement, primary: HTMLButtonElement }} dom
    */
+  // Daftar jawaban boleh digulir (HP dan pertanyaan tetap di tempat). Selama masih ada pilihan di bawah,
+  // kelas has-more memudarkan ujung bawahnya sebagai tanda bisa digulir.
+  function watchScroll(list) {
+    const update = () => list.classList.toggle("has-more", list.scrollHeight - list.clientHeight - list.scrollTop > 2);
+    list.addEventListener("scroll", update, { passive: true });
+    new ResizeObserver(update).observe(list);
+    return update;
+  }
+
   function create(dom) {
     let primaryAction = null;
     let cooldownTimer = null;
-    let streak = 0;
+    let watched = null; // daftar jawaban yang sedang dipantau guliran-nya
+    let refreshScroll = () => {};
+
+    function watchOptions() {
+      const list = dom.task.querySelector(".options");
+      if (list && list !== watched) {
+        watched = list;
+        refreshScroll = watchScroll(list);
+      }
+      refreshScroll();
+    }
 
     // Satu tombol utama dipakai di semua langkah; fungsinya diganti lewat primaryAction.
     // Setiap kali fungsinya berganti, klik diabaikan sebentar supaya klik ganda
-    // (atau Enter yang ditahan) tidak melompati umpan balik.
+    // (atau Enter yang ditahan) tidak melompati umpan balik. tone: good | partial | bad.
     function setPrimary(label, enabled, action, tone) {
       dom.primary.textContent = label;
       dom.primary.disabled = !enabled;
@@ -61,24 +87,19 @@ const CekKit = (() => {
       primaryAction();
     });
 
-    // Lembar bawah seperti Duolingo: seruan, judul hasil, satu kalimat. Benar berturut-turut = combo.
-    // xp: bonus yang didapat di soal ini (0 kalau soal ini tidak memberi XP).
-    // cheer: celetukan khusus (misalnya dari Lupi); kosong = seruan acak.
+    // Lembar bawah seperti Duolingo: Coach Wall bereaksi, seruan, judul hasil, satu kalimat.
+    // tone: good (hijau), partial (kuning, hampir benar), bad (merah). Hanya "good" yang menambah streak.
+    // xp: bonus yang didapat di soal ini. cheer: celetukan khusus; kosong = seruan acak.
     function showFeedback(tone, heading, text, xp = 0, cheer = "") {
-      const isGood = tone === "good";
-      streak = isGood ? streak + 1 : 0;
+      const streak = CekUI.recordStreak(tone === "good");
+      const mood = CekUI.reaction(tone, streak);
       dom.lesson.classList.add("is-graded");
       dom.footer.className = `lesson-footer is-${tone}`;
-      dom.feedback.replaceChildren(
-        el("p", { className: cheer ? "feedback-cheer is-quip" : "feedback-cheer" }, [
-          cheer || (isGood ? pick(CHEERS) : pick(OOPS)),
-          isGood && xp > 0 && el("span", { className: "xp-pop", text: `+${xp} XP` }),
-          streak >= 2 && el("span", { className: "combo", text: `${streak}x combo!` })
-        ]),
-        el("h2", {}, [CekUI.icon(isGood ? "check" : "alert"), heading]),
-        el("p", { text })
-      );
-      CekSound.play(isGood ? "good" : "bad");
+      dom.feedback.replaceChildren(...CekUI.feedback({ tone, heading, text, cheer, xp, streak, mood }));
+      // Coach Wall di soal (kalau masih terlihat, mis. di layar lebar) ikut berekspresi sama.
+      const taskMascot = dom.task.querySelector(".task-head .mascot");
+      if (taskMascot) taskMascot.replaceWith(CekUI.mascot(mood));
+      CekSound.play(SOUND_OF[tone]);
     }
 
     function hideFeedback() {
@@ -87,25 +108,31 @@ const CekKit = (() => {
       dom.feedback.replaceChildren();
     }
 
-    // Soal: Lupi + gelembung berisi pertanyaan, petunjuk singkat, lalu pilihan.
-    // layout: nama gaya pilihan (chips, find, match, url, reply); mood: ekspresi awal Lupi.
-    function renderTask(title, subtitle, options, label, layout, mood = "think") {
+    /**
+     * Soal: Coach Wall + gelembung berisi pertanyaan, petunjuk singkat, lalu pilihan.
+     * layout: gaya pilihan (chips, find, match, url, reply, quiz); mood: ekspresi awal Coach Wall.
+     * lead: elemen tambahan di atas pilihan (mis. penelepon di soal suara).
+     * Kalau ada pilihan berkotak centang, ditulis juga "Bisa pilih lebih dari satu".
+     */
+    function renderTask(title, subtitle, options, label, layout, mood = "think", lead = null) {
       const heading = el("h2", { className: "coach-bubble task-title", tabindex: "-1", text: title });
-      dom.task.replaceChildren(
-        el("div", { className: "coach task-head" }, [CekUI.mascot(mood), heading]),
-        el("p", { className: "task-sub", text: subtitle }),
+      const isMulti = options.some((option) => option.querySelector && option.querySelector(".option-check"));
+      const sub = subtitle || isMulti
+        ? el("p", { className: "task-sub" }, [subtitle, isMulti && el("span", { className: "multi-hint" }, [CekUI.icon("check"), t("task.multi")])])
+        : null;
+      dom.task.replaceChildren(...[
+        el("div", { className: "coach task-head" }, [CekUI.coach(mood, "coach.lessonTips"), heading]),
+        sub,
+        lead,
         el("div", { className: layout ? `options options-${layout}` : "options", role: "group", "aria-label": label }, options)
-      );
+      ].filter(Boolean));
+      watchOptions();
       // Pindahkan fokus ke soal baru supaya pengguna keyboard/pembaca layar tidak tersesat.
       heading.focus({ preventScroll: true });
     }
 
-    // Lupi ikut bereaksi: lompat senang kalau benar, geleng kalau salah.
-    function setMood(isRight) {
-      dom.task.querySelector(".mascot").replaceWith(CekUI.mascot(isRight ? "cheer" : "oops"));
-    }
-
-    // kind: "check" (boleh banyak), "radio" (pilih satu), atau kosong untuk pilihan tanpa kotak (mis. "Nggak ada yang salah").
+    // kind: "check" (boleh banyak, kotak centang), "radio" (pilih satu, bulatan),
+    // atau kosong untuk pilihan tanpa kotak (mis. "Nggak ada yang salah").
     function optionButton(id, title, onClick, kind, iconId) {
       return el("button", { type: "button", className: kind ? "option" : "option option-plain", "data-id": id, "aria-pressed": "false", onClick }, [
         kind && el("span", { className: `option-${kind}`, "aria-hidden": "true" }),
@@ -133,10 +160,23 @@ const CekKit = (() => {
         const note = noteOf(button.dataset.id, status);
         if (note) button.querySelector(".option-text").append(el("span", { className: "option-note", text: note }));
       });
+      dom.task.querySelector(".options").scrollTop = 0; // hasil dibaca dari atas
+      watchOptions(); // isi daftar berubah (penjelasan ditambah, pilihan lain disembunyikan, atau daftar diganti)
     }
 
-    return { setPrimary, showFeedback, hideFeedback, renderTask, setMood, optionButton, syncPressed, lockOptions };
+    /**
+     * Layar selesai. withHome: tampilkan juga tombol "Kembali ke beranda" (tautan #home di HTML) di samping
+     * tombol utama; false kalau tombol utamanya sendiri sudah kembali ke beranda.
+     */
+    function showDone(withHome = true) {
+      dom.lesson.classList.add("is-done");
+      dom.footer.classList.add("is-done");
+      const home = document.getElementById("home");
+      if (home) home.hidden = !withHome;
+    }
+
+    return { setPrimary, showFeedback, hideFeedback, renderTask, optionButton, syncPressed, lockOptions, showDone };
   }
 
-  return { create, shuffled, setProgress };
+  return { create, shuffled, setProgress, toneOf };
 })();

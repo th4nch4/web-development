@@ -6,6 +6,9 @@
       Satu pilihan benar. why = penjelasan yang muncul setelah menjawab.
   - { type: "learn", title, text: ["paragraf", ...], source }
       Kartu penjelasan singkat. source opsional.
+  - { type: "voice", caller, line, question, options: [{ text, correct, why }] }
+      Soal suara: penelepon misterius mengucapkan line (suara bawaan perangkat), pemain memilih jawaban.
+      Satu pilihan benar. Nama, nomor, dan bank harus fiktif.
 
   CATATAN: kuis tautan memakai nama merek sungguhan (bank dan toko online) sesuai naskah tim.
   Alamat palsu hanya ditampilkan sebagai teks, tidak bisa diklik. Cek ulang sebelum dikumpulkan.
@@ -22,8 +25,8 @@ const MATERI = [
         question: "Ada telepon dari nomor asing, ngakunya dari bank. Kamu ngapain?",
         sub: "Pernah ngalamin? Pilih satu, ya.",
         options: [
-          { text: "Menolak teleponnya", correct: true, why: "Tepat! Bisa jadi itu Voice Phishing. Kalau ragu, telepon bank lewat nomor resmi di balik kartu." },
-          { text: "Mengangkat teleponnya", correct: false, why: "Penipu jago membujuk lewat suara. Lebih aman ditolak, lalu cek sendiri ke bank." },
+          { text: "Tutup teleponnya, lalu hubungi bank lewat nomor resmi", correct: true, why: "Tepat! Bisa jadi itu Voice Phishing. Cek sendiri lewat nomor resmi di balik kartu atau di aplikasi bank." },
+          { text: "Ikuti instruksi penelepon", correct: false, why: "Penipu jago membujuk lewat suara. Tutup teleponnya, lalu cek sendiri ke bank." },
           { text: "Memberikan kode OTP jika diminta", correct: false, why: "Kode OTP nggak boleh dikasih ke siapa pun, termasuk yang ngaku petugas bank." },
           { text: "Menelepon kembali nomor tersebut", correct: false, why: "Nomor itu milik penipu. Hubungi bank hanya lewat nomor resmi yang kamu cari sendiri." }
         ]
@@ -35,6 +38,39 @@ const MATERI = [
           "Penipuan lewat telepon atau pesan suara. Penipu pura-pura jadi orang yang bisa dipercaya supaya kamu memberi data penting: data pribadi, password, kode OTP, info rekening, atau akses ke HP.",
           "Modusnya macam-macam: rekening katanya mau diblokir, kamu katanya menang undian, atau penipu mengaku petugas bank.",
           "Siapa saja bisa jadi korban, terutama yang belum banyak tahu soal penipuan online, seperti anak-anak dan lansia."
+        ]
+      },
+      {
+        type: "voice",
+        caller: "Nomor tidak dikenal",
+        line: "Selamat siang, saya Andi dari bagian keamanan Bank Arunika. Ada transaksi lima juta rupiah dari rekening Anda. Kalau itu bukan Anda, sebutkan kode OTP yang baru masuk supaya kami batalkan.",
+        question: "Dengar baik-baik. Apa yang diminta penelepon?",
+        options: [
+          { text: "Kode OTP", correct: true, why: "Tepat! Petugas bank tidak pernah meminta OTP. Begitu kode itu disebut, penipu bisa masuk ke rekeningmu." },
+          { text: "Nomor rekening untuk kirim hadiah", correct: false, why: "Dengar lagi: yang diminta kode OTP yang baru masuk. Itu kunci rekeningmu." },
+          { text: "Tidak minta apa-apa", correct: false, why: "Penelepon meminta kode OTP. Permintaan itu tanda bahaya paling jelas." }
+        ]
+      },
+      {
+        type: "voice",
+        caller: "+62 21-0000-7788",
+        line: "Ini panggilan terakhir dari kami. Dalam sepuluh menit rekening Anda diblokir permanen. Jangan tutup teleponnya dan jangan cerita ke siapa pun, ini rahasia.",
+        question: "Trik apa yang dipakai penelepon?",
+        options: [
+          { text: "Bikin panik dan buru-buru", correct: true, why: "Betul! Batas waktu dan larangan bercerita dipakai supaya kamu tidak sempat berpikir atau bertanya ke orang lain." },
+          { text: "Menawarkan hadiah", correct: false, why: "Tidak ada hadiah di sini. Yang ada ancaman blokir dan batas waktu sepuluh menit." },
+          { text: "Menjelaskan prosedur resmi bank", correct: false, why: "Bank tidak mengancam lewat telepon dan tidak melarangmu bercerita ke keluarga." }
+        ]
+      },
+      {
+        type: "voice",
+        caller: "Nomor tidak dikenal",
+        line: "Halo, Nak? Ini Om. HP Om rusak, jadi pinjam punya teman. Om lagi kena masalah, tolong transfer dua juta sekarang ya. Nanti Om ganti.",
+        question: "Langkah paling aman sekarang apa?",
+        options: [
+          { text: "Tutup, lalu telepon Om lewat nomor lama yang kamu simpan", correct: true, why: "Tepat! Cek lewat nomor yang sudah kamu simpan. Penipu sering pura-pura jadi keluarga dari nomor baru." },
+          { text: "Langsung transfer karena darurat", correct: false, why: "Rasa darurat itu yang dimanfaatkan penipu. Cek dulu lewat nomor lama Om." },
+          { text: "Kirim setengahnya dulu", correct: false, why: "Berapa pun jumlahnya tetap hilang kalau ini penipuan. Pastikan dulu itu benar Om-mu." }
         ]
       },
       {

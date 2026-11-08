@@ -7,10 +7,16 @@ Yang diperiksa:
 - tidak ada error JavaScript di console,
 - tidak ada permintaan jaringan ke luar (semua berjalan di browser),
 - satu pelajaran bisa diselesaikan, progres dan XP tersimpan, rapor terisi,
-- setiap soal tampil bersama HP simulasi dan muat satu layar tanpa gulir.
+- setiap soal tampil bersama HP simulasi dan halamannya tidak pernah digulir; HP dan pertanyaan tetap
+  di tempat, hanya daftar jawaban yang boleh digulir,
+- tidak ada jendela bawaan browser (alert/confirm); keluar dari pelajaran memakai dialog sendiri,
+- Pengaturan terbuka sebagai jendela di tengah, streak api bertambah saat jawaban benar,
+- soal suara di materi tetap bisa dijawab walau perangkat tidak punya suara (teksnya ditampilkan),
+- semuanya juga dimainkan sekali dalam bahasa English (isi dari js/en/).
 """
 import argparse
 import pathlib
+import re
 import sys
 import tempfile
 
@@ -25,6 +31,8 @@ VIEWPORTS = {
     "safari": {"width": 402, "height": 681},
     "laptop": {"width": 1280, "height": 800},
 }
+# Semua ukuran dalam bahasa Indonesia, lalu satu putaran English di ukuran HP.
+RUNS = [(name, viewport, "id") for name, viewport in VIEWPORTS.items()] + [("hp-en", VIEWPORTS["hp"], "en")]
 
 
 def launch(p):
@@ -38,6 +46,7 @@ def watch(page, problems):
     page.on("console", lambda m: m.type == "error" and problems.append(f"console: {m.text}"))
     page.on("pageerror", lambda e: problems.append(f"pageerror: {e}"))
     page.on("request", lambda r: not r.url.startswith("file:") and problems.append(f"request keluar: {r.url}"))
+    page.on("dialog", lambda d: (problems.append(f"jendela bawaan browser: {d.message}"), d.dismiss()))
 
 
 def press(page):
@@ -52,10 +61,23 @@ def check(condition, message, problems):
 
 
 def fits_screen(page):
-    """Soal harus muat satu layar: halaman dan area pelajaran tidak bisa digulir."""
+    """Soal harus muat satu layar: halaman dan area pelajaran tidak bisa digulir (daftar jawaban boleh)."""
     return page.evaluate("""() => {
         const main = document.getElementById('lesson');
         return document.documentElement.scrollHeight <= innerHeight && main.scrollHeight <= main.clientHeight;
+    }""")
+
+
+def answers_scroll_alone(page):
+    """Gulir daftar jawaban sampai bawah: HP simulasi dan pertanyaan tidak ikut bergeser."""
+    return page.evaluate("""() => {
+        const top = (s) => { const n = document.querySelector(s); return n ? n.getBoundingClientRect().top : 0; };
+        const before = [top('#phone-slot'), top('.task-title')];
+        const list = document.querySelector('.task-slot > .options');
+        list.scrollTop = list.scrollHeight;
+        const after = [top('#phone-slot'), top('.task-title')];
+        list.scrollTop = 0;
+        return before.every((value, i) => Math.abs(value - after[i]) < 1);
     }""")
 
 
@@ -107,7 +129,7 @@ def solve_url(page, scenario, wrong):
 def solve_reply(page, scenario, wrong):
     words = scenario["reply"]["words"]
     for word in (list(reversed(words)) if wrong else words):
-        page.locator(".reply-bank .tile", has_text=word).first.click()
+        page.locator(".reply-bank .tile").filter(has_text=re.compile(f"^{re.escape(word)}$")).first.click()
     press(page)
 
 
@@ -121,8 +143,9 @@ SOLVERS = {"find": solve_find, "flags": solve_flags, "match": solve_match,
            "url": solve_url, "reply": solve_reply, "action": solve_action}
 
 
-def play_lesson(page, scenario, wrong, shot, problems):
-    """Mainkan satu pelajaran sesuai susunan soalnya. wrong=True memilih jawaban keliru."""
+def play_lesson(page, scenario, wrong, shot, problems, check_exit=False):
+    """Mainkan satu pelajaran sesuai susunan soalnya. wrong=True memilih jawaban keliru.
+    check_exit=True: sekalian uji dialog keluar (setelah fokus awal diperiksa)."""
     sid = scenario["id"]
     steps = scenario.get("steps") or ["find", "flags", "action"]
     page.wait_for_selector(".task-title")  # soal tampil bersama HP, tanpa harus mengetuk dulu
@@ -131,10 +154,13 @@ def play_lesson(page, scenario, wrong, shot, problems):
     hinted = page.evaluate("""() => new Set([...document.querySelectorAll('.part-text')]
         .map((t) => { const c = getComputedStyle(t); return c.backgroundColor + c.outlineStyle + c.boxShadow; })).size > 1""")
     check(not hinted, f"{sid}: bagian mencurigakan terlihat beda di pesan", problems)
+    if check_exit:
+        check_exit_dialog(page, sid, problems)
 
     for number, step in enumerate(steps, start=1):
         page.wait_for_selector(".task-title:not([data-done])")
         check(fits_screen(page), f"{sid}: soal {step} perlu digulir", problems)
+        check(answers_scroll_alone(page), f"{sid}: soal {step}: HP atau pertanyaan ikut tergulir", problems)
         page.evaluate("() => document.querySelector('.task-title').setAttribute('data-done', '')")
         SOLVERS[step](page, scenario, wrong)
         if step == "find":
@@ -156,7 +182,11 @@ def play_materi(page, out, name, problems):
         for step in materi["steps"]:
             page.wait_for_selector(".task-title")
             check(fits_screen(page), f"{name}: materi {materi['id']} perlu digulir", problems)
-            if step["type"] == "quiz":
+            if step["type"] == "voice":
+                page.wait_for_selector(".voice-card")
+                shown = page.evaluate("() => !document.querySelector('.voice-text').hidden || !document.querySelector('.voice-controls').hidden")
+                check(shown, f"{name}: soal suara tanpa suara dan tanpa teks", problems)
+            if step["type"] in ("quiz", "voice"):
                 index = next(i for i, o in enumerate(step["options"]) if o["correct"])
                 page.click(f'.option[data-id="{index}"]')
                 press(page)
@@ -164,29 +194,70 @@ def play_materi(page, out, name, problems):
             press(page)
         page.wait_for_selector("#done-title")
         page.screenshot(path=out / f"{name}-materi-{materi['id']}.png")
-        quizzes = sum(1 for step in materi["steps"] if step["type"] == "quiz")
+        quizzes = sum(1 for step in materi["steps"] if step["type"] != "learn")
         best = page.evaluate(f"() => JSON.parse(localStorage.getItem('cekdulu.progress.v1')).materi['{materi['id']}']")
         check(best == quizzes, f"{name}: skor materi {materi['id']} tidak tersimpan", problems)
-        press(page)
+        if page.locator("#home:visible").count():
+            page.click("#home")  # "Kembali ke beranda"; tombol utama "Lanjut" ke materi berikutnya
+        else:
+            press(page)  # materi terakhir: tombol utamanya sendiri kembali ke beranda
         page.wait_for_selector("#units .node")
+
+
+def check_exit_dialog(page, name, problems):
+    """Tombol X di tengah pelajaran membuka dialog sendiri; "Lanjut belajar" menutupnya tanpa pindah halaman."""
+    url = page.url
+    page.click(".lesson-top a.icon-btn")
+    page.wait_for_selector("dialog.cek-dialog[open]")
+    page.click("dialog.cek-dialog .btn")
+    page.wait_for_selector("dialog.cek-dialog", state="detached")
+    check(page.url == url, f"{name}: 'Lanjut belajar' malah keluar dari pelajaran", problems)
+
+
+def check_settings(page, name, problems):
+    """Pengaturan: jendela di tengah dengan tiga tab, bisa ditutup dengan Esc."""
+    page.click(".settings-btn")
+    page.wait_for_selector("dialog.settings-dialog[open]")
+    check(page.locator(".settings-tab").count() == 3, f"{name}: tab pengaturan bukan 3", problems)
+    page.click("#set-tab-look")
+    check(page.locator("#set-panel-look:visible").count() == 1, f"{name}: tab Tampilan tidak terbuka", problems)
+    page.keyboard.press("Escape")
+    page.wait_for_selector("dialog.settings-dialog[open]", state="detached")
+
+
+def check_reset(page, name, problems):
+    """Hapus progres lewat Pengaturan > Umum, dengan dialog konfirmasi sendiri."""
+    page.click(".settings-btn")
+    page.click(".set-reset")
+    page.wait_for_selector("dialog.cek-dialog[open]")
+    page.click("dialog.cek-dialog .btn-text-danger")
+    page.wait_for_selector("a.node-current")
+    progress = page.evaluate("() => localStorage.getItem('cekdulu.progress.v1')")
+    check(progress is None, f"{name}: progres tidak terhapus", problems)
+
+
+def tap_quick(page, selector):
+    """Klik tombol Ronde Kilat setelah jeda pengaman klik ganda selesai."""
+    page.wait_for_selector(f"#buttons:not([data-cooldown]) {selector}")
+    page.click(f"#buttons {selector}")
 
 
 def play_quick(page, unit_id, out, name, problems):
     """Ronde Kilat mode santai: jawab semua dengan benar, skor tersimpan."""
     items = page.evaluate(f"() => QUICK_ROUND.filter((q) => q.unit === {unit_id})")
     page.click(f'a.node-quick[href="kilat.html?unit={unit_id}"]')
-    page.click("text=Santai, tanpa waktu")
+    tap_quick(page, ".btn-quiet")  # mode santai, tanpa waktu
     for item in items:
         page.wait_for_selector(".quick-card")
-        page.click(".btn-scam" if item["scam"] else ".btn-real")
+        tap_quick(page, ".btn-scam" if item["scam"] else ".btn-real")
         page.wait_for_selector(".feedback h2")
-        check("Betul" in page.inner_text(".feedback h2"), f"{name}: jawaban kilat yang benar dinilai salah", problems)
-        page.click("#buttons .btn")
+        check(page.locator(".lesson-footer.is-good").count() == 1, f"{name}: jawaban kilat yang benar dinilai salah", problems)
+        tap_quick(page, ".btn")
     page.wait_for_selector("#score-title")
     page.screenshot(path=out / f"{name}-kilat-{unit_id}.png")
     best = page.evaluate(f"() => JSON.parse(localStorage.getItem('cekdulu.progress.v1')).quick['{unit_id}']")
     check(best == len(items), f"{name}: skor Ronde Kilat tidak tersimpan", problems)
-    page.click("text=Ke jalur belajar")
+    tap_quick(page, ".btn:last-child")  # kembali ke beranda
     page.wait_for_selector("#units .node")
 
 
@@ -194,12 +265,17 @@ def run(out):
     problems = []
     with sync_playwright() as p:
         browser = launch(p)
-        for name, viewport in VIEWPORTS.items():
+        for name, viewport, lang in RUNS:
             # reduced_motion: screenshot tidak tertangkap di tengah animasi, sekaligus menguji mode itu.
             page = browser.new_context(viewport=viewport, reduced_motion="reduce").new_page()
             watch(page, problems)
             page.goto((ROOT / "index.html").as_uri())
+            if lang == "en":
+                page.evaluate("() => localStorage.setItem('cekdulu.lang', 'en')")
+                page.reload()
+            check(page.evaluate("() => document.documentElement.lang") == lang, f"{name}: bahasa halaman bukan {lang}", problems)
             page.screenshot(path=out / f"{name}-0-jalur.png", full_page=True)
+            check_settings(page, name, problems)
             play_materi(page, out, name, problems)
             scenarios = page.evaluate("() => SCENARIOS")
             page.click("a.node-current")
@@ -212,8 +288,11 @@ def run(out):
                     if name == "hp" or n in (1, 2):
                         page.screenshot(path=out / f"{name}-L{n}-{step}.png", full_page=True)
 
-                play_lesson(page, scenario, wrong, shot, problems)
-                press(page)  # "Pelajaran berikutnya", atau "Lihat rapor" setelah yang terakhir
+                play_lesson(page, scenario, wrong, shot, problems, check_exit=number == 1)
+                if number == 1:
+                    streak = page.evaluate("() => Number(document.querySelector('#streak .streak').textContent)")
+                    check(streak > 0, f"{name}: streak tidak bertambah setelah jawaban benar", problems)
+                press(page)  # "Lanjut" ke pelajaran berikutnya, atau "Lihat rapor" setelah yang terakhir
 
             page.wait_for_selector(".q-list")
             page.click(".back-link")
@@ -229,6 +308,7 @@ def run(out):
             page.click(".back-link")
             page.wait_for_selector("a.node-trophy")
             page.screenshot(path=out / f"{name}-5-jalur-selesai.png", full_page=True)
+            check_reset(page, name, problems)
             print(f"{name}: 6 pelajaran selesai, XP = {xp}")
         browser.close()
     return problems

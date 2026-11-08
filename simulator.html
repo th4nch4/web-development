@@ -4,18 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="format-detection" content="telephone=no"> <!-- iPhone: nomor fiktif tidak jadi link telepon -->
-  <title>Pelajaran · CekDulu</title>
+  <title data-i18n="title.lesson">Pelajaran · CekDulu</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/world.css">
+  <link rel="stylesheet" href="css/phone.css">
+  <link rel="stylesheet" href="css/coach.css">
+  <link rel="stylesheet" href="css/dialog.css">
   <script src="js/sound.js"></script>
-  <script src="js/theme.js"></script>
+  <script src="js/strings.js"></script>
+  <script src="js/lang.js"></script>
+  <script src="js/settings.js"></script>
 </head>
 <body class="lesson-page">
   <header class="lesson-top">
-    <a class="icon-btn" href="index.html" aria-label="Keluar dari pelajaran">
+    <a class="icon-btn" href="index.html" aria-label="Keluar dari pelajaran" data-i18n-label="lesson.exit">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
     </a>
-    <div class="progress" id="progress" role="progressbar" aria-label="Kemajuan pelajaran" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span></span></div>
+    <div class="progress" id="progress" role="progressbar" aria-label="Kemajuan pelajaran" data-i18n-label="lesson.progress" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span></span></div>
+    <span id="streak"></span>
   </header>
 
   <main class="lesson-main" id="lesson">
@@ -30,13 +36,15 @@
   <footer class="lesson-footer" id="footer">
     <div class="footer-inner">
       <div class="feedback" id="feedback" aria-live="polite"></div>
+      <a class="btn btn-quiet" id="home" href="index.html" data-i18n="common.home" hidden>Kembali ke beranda</a>
       <button type="button" class="btn" id="primary" disabled>Lanjut</button>
     </div>
   </footer>
 
-  <script src="js/questions.js"></script>
-  <script src="js/scenarios.js"></script>
+  <script>CekLang.load("questions")</script> <!-- js/questions.js atau js/en/questions.js -->
+  <script>CekLang.load("scenarios")</script> <!-- js/scenarios.js atau js/en/scenarios.js -->
   <script src="js/logic.js"></script>
+  <script src="js/coach.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/world.js"></script>
   <script src="js/kit.js"></script>
