@@ -1,5 +1,5 @@
 // Pengaturan: tombol roda gigi di bar atas membuka jendela di tengah layar dengan menu samping
-// Umum, Tampilan, dan Bahasa. Dimuat di <head> setelah js/lang.js supaya tema dan pilihan gerak terpasang
+// Umum, Suara, Tampilan, dan Bahasa. Dimuat di <head> setelah js/lang.js supaya tema dan pilihan gerak terpasang
 // sebelum halaman tampil (tanpa kedip). Jendelanya dibuat saat DOMContentLoaded, setelah js/ui.js dimuat.
 // Semua pilihan disimpan hanya di perangkat ini.
 const CekSettings = (() => {
@@ -10,7 +10,10 @@ const CekSettings = (() => {
     motion: { key: "cekdulu.motion", values: ["auto", "on", "reduce"] }, // auto = ikut pengaturan HP
     confetti: { key: "cekdulu.confetti", values: ["on", "off"] },
     voice: { key: "cekdulu.voice", values: ["normal", "slow"] },
-    quick: { key: "cekdulu.quick", values: ["10", "20"] }
+    narration: { key: "cekdulu.vo", values: ["on", "off"] }, // VO Coach Wall di kartu materi
+    onlineVoice: { key: "cekdulu.onlineVoice", values: ["on", "off"] }, // boleh pakai suara online browser
+    quick: { key: "cekdulu.quick", values: ["10", "20"] },
+    textSize: { key: "cekdulu.textSize", values: ["normal", "large", "xlarge"] } // besarnya di css/style.css (--text-zoom)
   };
   const VOICE_RATE = { normal: 0.95, slow: 0.7 };
   const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -64,6 +67,7 @@ const CekSettings = (() => {
     const choice = theme();
     root.dataset.theme = choice === "dark" || (choice === "system" && darkMedia.matches) ? "dark" : "light";
     root.dataset.motion = pref("motion");
+    root.dataset.text = pref("textSize");
   }
 
   // ---------- Isi jendela pengaturan ----------
@@ -111,12 +115,7 @@ const CekSettings = (() => {
     const { el, icon } = CekUI;
     const seconds = (n) => t("settings.seconds", { n });
     return [
-      switchRow(t("settings.soundTitle"), t("settings.soundDesc"), CekSound.isOn(), CekSound.setOn),
       switchRow(t("settings.vibrate"), t("settings.vibrateDesc"), CekSound.vibrateOn(), CekSound.setVibrate),
-      choiceRow(t("settings.voice"), t("settings.voiceDesc"), [
-        { value: "normal", label: t("settings.voiceNormal"), icon: "speaker" },
-        { value: "slow", label: t("settings.voiceSlow"), icon: "turtle" }
-      ], pref("voice"), (value) => setPref("voice", value)),
       choiceRow(t("settings.quick"), t("settings.quickDesc"), [
         { value: "10", label: seconds(10), icon: "bolt" },
         { value: "20", label: seconds(20) }
@@ -130,6 +129,21 @@ const CekSettings = (() => {
     ];
   }
 
+  // Suara: efek, musik menunggu jawaban, VO Coach Wall, suara online (dengan penjelasan jujur), kecepatan bicara.
+  function soundPanel() {
+    const onOff = (name) => (on) => setPref(name, on ? "on" : "off");
+    return [
+      switchRow(t("settings.soundTitle"), t("settings.soundDesc"), CekSound.isOn(), CekSound.setOn),
+      switchRow(t("settings.music"), t("settings.musicDesc"), CekSound.musicOn(), CekSound.setMusic),
+      switchRow(t("settings.narration"), t("settings.narrationDesc"), pref("narration") === "on", onOff("narration")),
+      switchRow(t("settings.onlineVoice"), t("settings.onlineVoiceDesc"), pref("onlineVoice") === "on", onOff("onlineVoice")),
+      choiceRow(t("settings.voice"), t("settings.voiceDesc"), [
+        { value: "normal", label: t("settings.voiceNormal"), icon: "speaker" },
+        { value: "slow", label: t("settings.voiceSlow"), icon: "turtle" }
+      ], pref("voice"), (value) => setPref("voice", value))
+    ];
+  }
+
   function lookPanel() {
     return [
       choiceRow(t("settings.theme"), t("settings.systemNote"), [
@@ -137,6 +151,11 @@ const CekSettings = (() => {
         { value: "light", label: t("settings.light"), icon: "sun" },
         { value: "dark", label: t("settings.dark"), icon: "moon" }
       ], theme(), setTheme),
+      choiceRow(t("settings.textSize"), t("settings.textSizeDesc"), [
+        { value: "normal", label: t("settings.textNormal") },
+        { value: "large", label: t("settings.textLarge") },
+        { value: "xlarge", label: t("settings.textXlarge") }
+      ], pref("textSize"), (value) => setPref("textSize", value)),
       switchRow(t("settings.motion"), t("settings.motionDesc"), !reducedMotion(), (on) => setPref("motion", on ? "on" : "reduce")),
       switchRow(t("settings.confetti"), t("settings.confettiDesc"), pref("confetti") === "on", (on) => setPref("confetti", on ? "on" : "off"))
     ];
@@ -164,6 +183,7 @@ const CekSettings = (() => {
 
   const TABS = [
     { id: "general", label: "settings.general", icon: "sliders", build: generalPanel },
+    { id: "sound", label: "settings.sound", icon: "speaker", build: soundPanel },
     { id: "look", label: "settings.appearance", icon: "palette", build: lookPanel },
     { id: "lang", label: "settings.language", icon: "globe", build: langPanel }
   ];
@@ -244,6 +264,8 @@ const CekSettings = (() => {
     reducedMotion,
     confettiOn: () => pref("confetti") === "on",
     voiceRate: () => VOICE_RATE[pref("voice")],
+    narrationOn: () => pref("narration") === "on",
+    onlineVoiceOn: () => pref("onlineVoice") === "on",
     quickSeconds: () => Number(pref("quick"))
   };
 })();

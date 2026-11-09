@@ -68,17 +68,30 @@
 
   // ---------- HP simulasi ----------
 
-  // HP simulasi diperkecil hanya kalau tidak muat di ruangnya (halaman tidak pernah digulir).
-  // --phone-h = tinggi asli HP; di layar HP, ruang HP setinggi itu (dibatasi CSS) supaya pesan tampil ukuran asli.
-  // Pakai transform (lewat --fit), bukan zoom: Safari tidak mau mengecilkan huruf di bawah batas minimumnya.
+  // Isi HP simulasi tidak diperkecil: kalau pesannya lebih panjang dari ruang HP, isinya digulir di dalam HP
+  // (css/phone.css). --phone-h = tinggi alami HP (termasuk isi yang tersembunyi di bawah); di layar HP, ruang HP
+  // setinggi itu (dibatasi CSS). HP hanya diperkecil (transform lewat --fit) kalau lebarnya tidak muat.
+  // Transform, bukan zoom: Safari tidak mau mengecilkan huruf di bawah batas minimumnya.
   function fitPhone() {
     if (!phone) return;
     const slot = dom.phoneSlot;
-    slot.style.setProperty("--phone-h", `${phone.offsetHeight + FRAME_ALLOWANCE}px`);
-    const scale = Math.min(1,
-      slot.clientWidth / (phone.offsetWidth + FRAME_ALLOWANCE),
-      slot.clientHeight / (phone.offsetHeight + FRAME_ALLOWANCE));
+    const height = Math.round(phone.offsetHeight + hiddenHeight() + FRAME_ALLOWANCE);
+    // Beda 1px karena pembulatan diabaikan, supaya ukuran HP dan ruangnya tidak saling memicu bolak-balik.
+    if (Math.abs(height - (Number.parseFloat(slot.style.getPropertyValue("--phone-h")) || 0)) > 1) {
+      slot.style.setProperty("--phone-h", `${height}px`);
+    }
+    const scale = Math.min(1, slot.clientWidth / (phone.offsetWidth + FRAME_ALLOWANCE));
     phone.style.setProperty("--fit", String(scale));
+  }
+
+  // Tinggi isi HP yang tersembunyi di bawah (perlu digulir), dalam piksel HP. Isinya bisa diperbesar dengan zoom
+  // (ukuran teks), jadi diubah lewat perbandingan ukuran tampil dan ukuran asli; transform --fit dikeluarkan.
+  function hiddenHeight() {
+    const scroller = phone.querySelector(".app-body, .lock-screen");
+    if (!scroller || !scroller.clientHeight || !phone.offsetHeight) return 0;
+    const fit = phone.getBoundingClientRect().height / phone.offsetHeight;
+    const zoom = scroller.getBoundingClientRect().height / scroller.clientHeight / fit;
+    return (scroller.scrollHeight - scroller.clientHeight) * zoom;
   }
 
   function showPhone() {
@@ -88,8 +101,13 @@
     }
     phone = CekPhone.render(scenario);
     dom.phoneSlot.replaceChildren(phone);
-    // Ruang untuk HP berubah saat soal, umpan balik, atau ukuran layar berganti.
-    new ResizeObserver(fitPhone).observe(dom.phoneSlot);
+    // Ruang untuk HP berubah saat soal, umpan balik, atau ukuran layar berganti; HP-nya sendiri berubah
+    // saat ukuran teks diganti di Pengaturan.
+    const observer = new ResizeObserver(fitPhone);
+    observer.observe(dom.phoneSlot);
+    observer.observe(phone);
+    const scroller = phone.querySelector(".app-body, .lock-screen");
+    if (scroller) CekKit.watchScroll(scroller); // ujung bawah dipudarkan selama masih ada pesan di bawah
     document.fonts.ready.then(fitPhone);
   }
 
@@ -259,6 +277,7 @@
   function tapMatch(button) {
     const first = state.matchPick;
     if (!first || first.dataset.side === button.dataset.side) {
+      CekSound.play("tap");
       if (first) first.setAttribute("aria-pressed", "false");
       button.setAttribute("aria-pressed", "true");
       setState({ matchPick: button });
@@ -349,6 +368,7 @@
   }
 
   function moveTile(tile) {
+    CekSound.play("tap");
     const line = dom.task.querySelector(".reply-line");
     const bank = dom.task.querySelector(".reply-bank");
     (tile.parentElement === line ? bank : line).append(tile);
@@ -389,16 +409,17 @@
 
   // ---------- Selesai ----------
 
-  function doneScreen(xp, saved) {
+  function doneScreen(xp, saved, streak) {
     const { findResult, flagResult, actionResult } = state;
     const findValue = isGenuine
       ? t(findResult.allCorrect ? "done.recognized" : "done.mistaken")
       : `${findResult.found.length}/${findResult.total}`;
     const perfect = findResult.allCorrect && flagResult.allCorrect && actionResult.correct;
     return el("section", { className: "done", "aria-labelledby": "done-title" }, [
-      perfect && CekUI.confetti(),
+      perfect && CekUI.celebrate(),
       el("div", { className: "done-hero" }, CekUI.mascot(perfect ? "cheer" : "happy")),
       el("h1", { id: "done-title", text: t(perfect ? "done.perfect" : "done.title") }),
+      CekUI.streakNote(streak),
       el("div", { className: "stats" }, [
         CekUI.stat(t("common.xpEarned"), `+${xp}`, "bolt", "gold"),
         CekUI.stat(t(isGenuine ? "done.genuine" : "done.found"), findValue, "target", "green"),
@@ -415,7 +436,7 @@
     const after = CekLogic.recordLesson(before, scenario.id, state.flagResult, state.actionResult, state.findResult);
     const saved = CekLogic.saveProgress(storage, after);
     showDone();
-    dom.lesson.replaceChildren(doneScreen(after.xp - before.xp, saved));
+    dom.lesson.replaceChildren(doneScreen(after.xp - before.xp, saved, CekUI.addLessonStreak()));
     // "Lanjut" langsung ke pelajaran berikutnya; setelah yang terakhir, ke rapor. "Kembali ke beranda" ke peta.
     const next = SCENARIOS[CekLogic.currentIndex(SCENARIOS, after)];
     const nextUrl = next ? `simulator.html?s=${encodeURIComponent(next.id)}` : "rapor.html";

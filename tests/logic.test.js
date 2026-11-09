@@ -266,3 +266,10 @@ test("recordLesson: bintang terbaik disimpan, jadi tidak turun saat pelajaran di
   assert.deepEqual(again.lessons.palsu.missed, ["siapa"], "rapor tetap memakai percobaan terakhir");
   assert.equal(CekLogic.lessonStars({ found: [], missed: ["x"], extra: [], actionCorrect: false, bestStars: 99 }), 3, "nilai rusak dibatasi 3");
 });
+
+test("isFresh: pemain baru sampai ada satu pelajaran, materi, atau Ronde Kilat yang selesai", () => {
+  const fresh = CekLogic.emptyProgress();
+  assert.equal(CekLogic.isFresh(fresh), true);
+  assert.equal(CekLogic.isFresh(CekLogic.recordMateri(fresh, "vishing", 2)), false);
+  assert.equal(CekLogic.isFresh(CekLogic.recordQuick(fresh, 1, 3)), false);
+});

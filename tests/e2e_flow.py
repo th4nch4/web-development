@@ -12,6 +12,8 @@ Yang diperiksa:
 - tidak ada jendela bawaan browser (alert/confirm); keluar dari pelajaran memakai dialog sendiri,
 - Pengaturan terbuka sebagai jendela di tengah, streak api bertambah saat jawaban benar,
 - soal suara di materi tetap bisa dijawab walau perangkat tidak punya suara (teksnya ditampilkan),
+- halaman pembuka "Kenali phishing" tampil dulu (janji privasi + dua jalan cepat); "penelepon misterius" langsung
+  membuka soal suara, "Mulai belajar" membuka peta; janji privasi tetap terlihat di atas peta,
 - semuanya juga dimainkan sekali dalam bahasa English (isi dari js/en/).
 """
 import argparse
@@ -214,15 +216,83 @@ def check_exit_dialog(page, name, problems):
     check(page.url == url, f"{name}: 'Lanjut belajar' malah keluar dari pelajaran", problems)
 
 
+def enter_map(page):
+    """Lewati halaman pembuka dengan tombol "Mulai belajar" (kalau tampil)."""
+    if page.locator(".landing-start").count():
+        page.click(".landing-start")
+        page.wait_for_selector(".landing", state="detached")
+
+
+def check_landing(page, name, problems):
+    """Halaman pembuka: janji privasi, dua jalan cepat; panggilan misterius langsung ke soal suara.
+    Setelah itu (sesi yang sama) beranda langsung membuka peta."""
+    page.wait_for_selector(".landing")
+    check(page.locator(".landing .promises li").count() == 3, f"{name}: janji privasi tidak lengkap di pembuka", problems)
+    check(page.locator(".landing .incoming").count() == 2, f"{name}: jalan cepat di layar kunci bukan 2", problems)
+    enter_map(page)  # "Mulai belajar": pembuka meluncur pergi, fokus ke level yang sedang dimainkan
+    focused = page.evaluate("() => document.activeElement.matches('#units a.node')")
+    check(focused, f"{name}: setelah Mulai belajar, fokus tidak di level peta", problems)
+    page.evaluate("() => sessionStorage.clear()")
+    page.reload()
+    page.wait_for_selector(".landing")
+    page.click(".incoming-call")
+    page.wait_for_selector(".voice-card")
+    page.go_back()
+    page.wait_for_selector("#units .node")
+    check(page.locator(".landing").count() == 0, f"{name}: pembuka tampil lagi di sesi yang sama", problems)
+
+
 def check_settings(page, name, problems):
-    """Pengaturan: jendela di tengah dengan tiga tab, bisa ditutup dengan Esc."""
+    """Pengaturan: jendela di tengah dengan empat tab, bisa ditutup dengan Esc."""
     page.click(".settings-btn")
     page.wait_for_selector("dialog.settings-dialog[open]")
-    check(page.locator(".settings-tab").count() == 3, f"{name}: tab pengaturan bukan 3", problems)
+    check(page.locator(".settings-tab").count() == 4, f"{name}: tab pengaturan bukan 4", problems)
     page.click("#set-tab-look")
     check(page.locator("#set-panel-look:visible").count() == 1, f"{name}: tab Tampilan tidak terbuka", problems)
     page.keyboard.press("Escape")
     page.wait_for_selector("dialog.settings-dialog[open]", state="detached")
+
+
+def check_dashboard(page, name, problems):
+    """Panel beranda di atas peta: kartu lanjut belajar, tiga angka, 5 pertanyaan, janji privasi."""
+    check(page.locator(".dash-next a.dash-go").count() == 1, f"{name}: kartu lanjut belajar tidak ada", problems)
+    check(page.locator(".dash-stats .stat").count() == 3, f"{name}: angka ringkas di beranda bukan 3", problems)
+    check(page.locator(".dash-q-list li").count() == 5, f"{name}: 5 pertanyaan tidak tampil di beranda", problems)
+    check(page.locator(".dash-trust .promises li").count() == 3, f"{name}: janji privasi tidak terlihat di atas peta", problems)
+
+
+def check_lock_tip(page, name, problems):
+    """Level terkunci diketuk: gelembung "kenapa terkunci" + tombol ke level sekarang; Esc menutupnya."""
+    locked = page.locator("button.node-locked").first
+    locked.evaluate("(node) => node.scrollIntoView({ block: 'center' })")  # tidak tertutup banner dunia
+    locked.click()
+    tip = page.locator(".lock-tip:visible")
+    check(tip.count() == 1, f"{name}: gelembung level terkunci tidak muncul", problems)
+    check(tip.locator("a.lock-go").count() == 1, f"{name}: gelembung terkunci tanpa tombol ke level sekarang", problems)
+    check(locked.get_attribute("aria-expanded") == "true", f"{name}: level terkunci tidak aria-expanded", problems)
+    page.keyboard.press("Escape")
+    check(page.locator(".lock-tip:visible").count() == 0, f"{name}: Esc tidak menutup gelembung terkunci", problems)
+    page.evaluate("() => window.scrollTo(0, 0)")
+
+
+def check_text_size(page, name, problems):
+    """Pengaturan > Tampilan > Ukuran teks "Paling besar": soal tetap satu layar, isi HP tidak diperkecil.
+    Dikembalikan ke Normal di akhir; tes berakhir di peta."""
+    page.click(".settings-btn")
+    page.click("#set-tab-look")
+    page.click("#set-panel-look .answer:has(input[value='xlarge'])")
+    check(page.evaluate("() => document.documentElement.dataset.text") == "xlarge", f"{name}: ukuran teks tidak terpasang", problems)
+    page.keyboard.press("Escape")
+    first = page.evaluate("() => SCENARIOS[0].id")
+    page.goto((ROOT / "simulator.html").as_uri() + f"?s={first}")
+    page.wait_for_selector(".task-title")
+    check(fits_screen(page), f"{name}: teks paling besar: soal perlu digulir", problems)
+    check(answers_scroll_alone(page), f"{name}: teks paling besar: HP atau pertanyaan ikut tergulir", problems)
+    fit = page.evaluate("() => Number(getComputedStyle(document.querySelector('.phone')).getPropertyValue('--fit') || 1)")
+    check(fit == 1, f"{name}: teks paling besar: HP simulasi diperkecil ({fit})", problems)
+    page.evaluate("() => localStorage.removeItem('cekdulu.textSize')")
+    page.goto((ROOT / "index.html").as_uri())
+    page.wait_for_selector("#units .node")
 
 
 def check_reset(page, name, problems):
@@ -275,9 +345,15 @@ def run(out):
                 page.reload()
             check(page.evaluate("() => document.documentElement.lang") == lang, f"{name}: bahasa halaman bukan {lang}", problems)
             page.screenshot(path=out / f"{name}-0-jalur.png", full_page=True)
+            check_landing(page, name, problems)
             check_settings(page, name, problems)
+            check_dashboard(page, name, problems)
+            check_lock_tip(page, name, problems)
+            check_text_size(page, name, problems)
             play_materi(page, out, name, problems)
             scenarios = page.evaluate("() => SCENARIOS")
+            streak_before = page.evaluate("() => Number(document.querySelector('#streak .streak').textContent)")
+            check(streak_before == len(page.evaluate("() => MATERI")), f"{name}: streak bukan 1 per materi selesai ({streak_before})", problems)
             page.click("a.node-current")
 
             for number, scenario in enumerate(scenarios, start=1):
@@ -289,9 +365,9 @@ def run(out):
                         page.screenshot(path=out / f"{name}-L{n}-{step}.png", full_page=True)
 
                 play_lesson(page, scenario, wrong, shot, problems, check_exit=number == 1)
-                if number == 1:
-                    streak = page.evaluate("() => Number(document.querySelector('#streak .streak').textContent)")
-                    check(streak > 0, f"{name}: streak tidak bertambah setelah jawaban benar", problems)
+                streak = page.evaluate("() => Number(document.querySelector('#streak .streak').textContent)")
+                check(streak == streak_before + number, f"{name}: streak setelah pelajaran {number} bukan +1 per pelajaran ({streak})", problems)
+                check(page.locator(".streak-note").count() == 1, f"{name}: layar selesai tanpa catatan streak", problems)
                 press(page)  # "Lanjut" ke pelajaran berikutnya, atau "Lihat rapor" setelah yang terakhir
 
             page.wait_for_selector(".q-list")
@@ -308,6 +384,7 @@ def run(out):
             page.click(".back-link")
             page.wait_for_selector("a.node-trophy")
             page.screenshot(path=out / f"{name}-5-jalur-selesai.png", full_page=True)
+            check_dashboard(page, name, problems)
             check_reset(page, name, problems)
             print(f"{name}: 6 pelajaran selesai, XP = {xp}")
         browser.close()

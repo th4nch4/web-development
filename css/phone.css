@@ -19,6 +19,9 @@
 .screen { display: flex; flex-direction: column; aspect-ratio: 440 / 956; overflow: hidden; font-size: 16px; line-height: 1.4; background: var(--seashell); border-radius: 52px; }
 .screen::after { content: ""; flex: none; align-self: center; width: 36%; height: 5px; margin: 8px 0; background: var(--violet); border-radius: 99px; } /* garis home */
 .phone-notif .screen::after { background: var(--seashell); }
+/* Ukuran teks dari Pengaturan (--text-zoom di css/style.css): isi layar membesar, bingkai HP dan status bar tetap.
+   Di layar kunci hanya notifikasinya; jam besarnya cuma hiasan. */
+.screen > :not(.status-bar):not(.lock-screen), .notif-card { zoom: var(--text-zoom, 1); }
 
 /* Status bar iPhone: jam, Dynamic Island, sinyal, Wi-Fi, baterai */
 .status-bar { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 14px 30px 6px 34px; color: var(--violet); background: var(--seashell); }
@@ -44,7 +47,10 @@
   .chat-action { display: none; } /* layar sangat sempit: nomor pengirim lebih penting dari ikon */
 }
 .chat-action { margin-left: 8px; }
-.chat-body { justify-content: flex-end; background: var(--seashell) url("../img/wa-pola.svg") 0 0 / 160px repeat; } /* pola doodle ala WhatsApp */
+.chat-body { background: var(--seashell) url("../img/wa-pola.svg") 0 0 / 160px repeat; } /* pola doodle ala WhatsApp */
+/* Pesan menempel di bawah seperti chat sungguhan. margin-top: auto (bukan justify-content: flex-end) supaya
+   kalau isinya digulir, bagian atasnya tetap bisa dicapai. */
+.chat-body > :first-child { margin-top: auto; }
 .bubble { position: relative; align-self: flex-start; max-width: 85%; margin: 0; padding: 7px 10px 8px; background: var(--seashell); border-radius: 12px; }
 .chat-body .date-chip + .bubble, .chat-body .system-notice + .bubble { border-top-left-radius: 0; }
 .chat-body .date-chip + .bubble::before, .chat-body .system-notice + .bubble::before {
@@ -106,13 +112,38 @@
 .link-preview { display: block; margin-top: 4px; font-size: 12px; color: var(--french); word-break: break-all; }
 .sms-body .tap-link { color: var(--violet); } /* French Blue di atas Powder Blue kontrasnya kurang */
 
+/* Isi HP tidak pernah diperkecil (dulu di laptop teks pesan tinggal +-10px). Kalau pesannya lebih panjang dari
+   layar HP, isinya digulir di dalam HP seperti HP sungguhan; ujung bawahnya dipudarkan selama masih ada isi di bawah
+   (kelas has-more dari js/engine.js). Header aplikasi tetap di tempat. */
+.app-body, .lock-screen { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.screen .has-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+}
+
+@media (min-width: 860px) {
+  /* Laptop: HP selebar aslinya (ikut membesar dengan ukuran teks) dan setinggi ruang yang ada, paling tinggi
+     seperti iPhone, bukan diperkecil utuh mengikuti rasio layar iPhone. */
+  #phone-slot .phone { display: flex; flex-direction: column; width: min(calc(360px * var(--text-zoom, 1)), calc(100% - 16px)); height: min(calc(100% - 16px), 764px); }
+  #phone-slot .screen { flex: 1 1 0; min-height: 0; aspect-ratio: auto; }
+}
+/* Laptop dengan layar pendek (mis. 1366x768 dengan zoom 125%): jam layar kunci dan status bar dipadatkan
+   supaya notifikasinya tetap terlihat utuh. */
+@media (min-width: 860px) and (max-height: 760px) {
+  .status-bar { min-height: 44px; padding-top: 10px; }
+  .island { top: 9px; height: 28px; }
+  .lock-screen { padding: 6px 12px; }
+  .lock-time { font-size: 42px; }
+  .lock-date { margin-bottom: 10px; }
+}
+
 @media (max-width: 859px) {
   /* Di HP pengguna, bingkai iPhone di dalam iPhone membuat pesan terlalu kecil untuk dibaca.
      Saat soal: hanya layar aplikasinya (header + pesan) selebar kolom, ukuran huruf asli.
      Status bar, Dynamic Island, tombol samping, garis home, dan bar ketik hanya hiasan. */
-  #phone-slot .phone { width: calc(100% - 16px); max-width: 440px; padding: 0; background: none; border-radius: 20px; box-shadow: 0 0 0 2px var(--line); }
+  #phone-slot .phone { display: flex; flex-direction: column; width: calc(100% - 16px); max-width: 440px; max-height: calc(100% - 16px); padding: 0; background: none; border-radius: 20px; box-shadow: 0 0 0 2px var(--line); }
   .phone::before, .phone::after, .status-bar, .screen::after, .chat-input { display: none; }
-  .screen { aspect-ratio: auto; border-radius: 20px; }
+  .screen { flex: 0 1 auto; min-height: 0; aspect-ratio: auto; border-radius: 20px; }
   .app-header { padding-top: 8px; }
   .lock-screen { padding: 12px; }
   .lock-time { font-size: 44px; }

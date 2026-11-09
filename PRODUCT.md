@@ -133,10 +133,19 @@ Belum ada testimoni, hasil uji pengguna, atau data pemakaian. Jangan mengarang s
 - Lupi diganti Coach Wall (maskot manusia). Dia bereaksi di lembar hasil setiap jawaban, bisa diketuk untuk tips umum (tidak pernah membocorkan jawaban), dan menunggu di samping level yang sedang dimainkan di peta.
 - Warna status jawaban: hijau benar, kuning hampir (sebagian benar di soal pilih banyak), merah salah. Ini pengecualian palet yang disetujui ketua; label teks tetap ada.
 - Soal pilih banyak menampilkan kotak centang dan penanda "Bisa pilih lebih dari satu"; soal pilih satu memakai bulatan.
-- Streak = jawaban benar beruntun (bukan hari beruntun), tampil sebagai api di bar atas: 1-2 oranye, 3-4 biru, 5 ke atas pink. Salah atau hampir mengembalikannya ke 0. Ini membatalkan keputusan 29 Okt "tanpa streak".
+- Streak = jawaban benar beruntun (bukan hari beruntun), tampil sebagai api di bar atas: 1-2 oranye, 3-4 biru, 5 ke atas pink. Salah atau hampir mengembalikannya ke 0. Ini membatalkan keputusan 29 Okt "tanpa streak". (Diganti 9 Nov: streak per level selesai, lihat di bawah.)
 - Latar bergerak dan hiasan di pinggir halaman soal dihapus supaya tidak mengganggu.
 - Materi "Kenali jenis phishing" pindah dari rak di bawah peta menjadi Dunia 3 "Teluk Phishing" di peta (urutan bebas). Catatan fiktif/privasi dan tombol Hapus progres pindah ke Pengaturan > Umum.
 - Materi Voice Phishing punya 3 soal suara: penelepon tanpa wajah berbicara (suara bawaan perangkat, hanya suara lokal), pemain memilih jawaban. Tanpa suara, kalimatnya ditampilkan sebagai teks.
 - Pengaturan menjadi jendela di tengah layar dengan menu Umum, Tampilan, Bahasa, dan pilihan baru: getar, kecepatan suara penelepon, waktu Ronde Kilat, animasi, konfeti.
 - Keluar dari pelajaran dan hapus progres memakai dialog buatan sendiri, bukan jendela bawaan browser.
 - Layar selesai bergaya game: Coach Wall besar, kotak angka berwarna dengan ikon (XP, bagian ketemu, tindakan), tombol "Lanjut" dan "Kembali ke beranda".
+- Sambutan beranda (hasil critique 26/40, `/impeccable onboard`): untuk pemain baru, Coach Wall menyapa, judul "Cek dulu sebelum klik.", janji privasi terlihat (Tanpa login · Tidak ada data dikirim · Progres hanya di perangkat ini), fakta 548.093 laporan IASC dengan sumber, dan layar kunci mini dengan dua jalan cepat: notifikasi asli Pasar Rimbun (pelajaran pesan asli) dan "Panggilan masuk" (langsung ke soal suara, `materi.html?m=vishing&mulai=suara`). Juri bisa bertemu pesan asli dan penelepon misterius dalam satu ketukan masing-masing tanpa menamatkan level 1. Setelah ada progres, sambutan menyusut dan Coach Wall pindah ke samping level aktif di peta.
+
+**Perubahan 9 November 2026 (masukan tim, "webdev yg krng.pdf"):**
+- Streak sekarang dihitung per level selesai, bukan per soal: +1 setiap pelajaran, materi, atau Ronde Kilat selesai (termasuk saat diulang). Jawaban salah tidak mengembalikannya ke 0; hanya Hapus progres. Layar selesai menulis "Streak naik jadi N!". Combo jawaban benar beruntun tetap ada di lembar hasil, tapi hanya di dalam satu pelajaran.
+- Level terkunci di peta bisa diketuk: gelembung di atasnya menjelaskan kenapa masih terkunci ("Selesaikan Level 4 dulu…") dan tombol ke level yang sedang dimainkan.
+- Pengaturan > Tampilan > Ukuran teks (Normal, Besar, Paling besar) memperbesar isi HP simulasi, soal, jawaban, kartu Ronde Kilat, dan lembar hasil.
+- HP simulasi di laptop tidak lagi diperkecil mengikuti rasio layar iPhone (dulu teks pesan +-10px): HP selebar aslinya dan setinggi ruang yang ada. Isi HP tidak pernah diperkecil; pesan yang lebih panjang dari layar HP digulir di dalam HP (ujung bawahnya dipudarkan sebagai tanda).
+- Hiasan kecil di samping level menempel di samping levelnya dan ikut jalur yang berliku, bukan berbaris di satu kolom.
+- Beranda punya panel di atas peta: kartu "Selanjutnya" (level berikutnya, progres, tombol Lanjut belajar), tiga angka (pelajaran, bintang, materi), 5 Pertanyaan Sebelum Klik dengan petunjuknya, lalu janji privasi, fakta IASC, dan jalan cepat.

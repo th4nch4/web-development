@@ -23,7 +23,12 @@
     state = { ...state, ...patch };
   }
 
-  const steps = materi ? materi.steps : [];
+  // ?mulai=suara: jalan cepat dari beranda, langsung ke soal suara pertama (untuk yang cuma punya semenit).
+  // Langkah sebelumnya dilewati; skor dan progres dihitung dari langkah yang dimainkan saja.
+  const firstVoice = materi && new URLSearchParams(location.search).get("mulai") === "suara"
+    ? materi.steps.findIndex((step) => step.type === "voice")
+    : -1;
+  const steps = materi ? materi.steps.slice(Math.max(0, firstVoice)) : [];
   const quizCount = steps.filter((step) => step.type !== "learn").length; // kuis + soal suara
 
   function nextStep() {
@@ -42,16 +47,19 @@
     else showQuiz(step);
   }
 
-  // Kartu penjelasan: Coach Wall menjelaskan, paragraf pendek, lalu "Lanjut".
+  // Kartu penjelasan: Coach Wall menjelaskan (VO: dibacakan otomatis kalau ada suara dan Narasi menyala),
+  // paragraf pendek, lalu "Lanjut". Tombol "Dengarkan" memutar ulang.
   function showLearn(step) {
+    const card = el("div", { className: "learn-card" }, [
+      ...step.text.map((paragraph) => el("p", { text: paragraph })),
+      step.source && el("p", { className: "learn-source", text: t("materi.source", { source: step.source }) })
+    ]);
     dom.task.replaceChildren(
       el("div", { className: "coach task-head" }, [CekUI.coach("teach", "coach.lessonTips"), el("h2", { className: "coach-bubble task-title", tabindex: "-1", text: step.title })]),
-      el("div", { className: "learn-card" }, [
-        ...step.text.map((paragraph) => el("p", { text: paragraph })),
-        step.source && el("p", { className: "learn-source", text: t("materi.source", { source: step.source }) })
-      ])
+      card
     );
     dom.task.querySelector(".task-title").focus({ preventScroll: true });
+    narrate(step, card);
     // Fungsi baru (bukan nextStep langsung) supaya jeda pengaman klik ganda ikut berjalan:
     // tombol sebelumnya juga "Lanjut" dengan nextStep, jadi klik kedua bisa melompati kartu ini.
     kit.setPrimary(t("common.continue"), true, () => nextStep());
@@ -66,55 +74,43 @@
     kit.setPrimary(t("common.check"), false, checkQuiz);
   }
 
-  // ---------- Soal suara: penelepon misterius bicara, pemain memilih jawaban ----------
-  // Suara dibuat browser (speechSynthesis) hanya dengan suara yang terpasang di perangkat (localService),
-  // jadi kalimatnya tidak dikirim ke server mana pun. Tanpa suara yang cocok, kalimatnya ditampilkan sebagai teks.
+  // ---------- Suara: VO Coach Wall dan penelepon misterius (js/voice.js) ----------
 
-  const hasSpeech = "speechSynthesis" in window;
-  const LANG_TAG = { id: "id-ID", en: "en-US" };
   const SLOW_RATE = 0.6;
-  let speakTimer = null;
-  let currentUtterance = null; // ucapan yang sedang diputar; ucapan lama yang dibatalkan tidak boleh mengubah tampilan
-  if (hasSpeech) window.speechSynthesis.getVoices(); // mulai memuat daftar suara sejak awal
+  const stopVoice = () => CekVoice.stop();
 
-  function localVoice() {
-    if (!hasSpeech) return null;
-    const tag = LANG_TAG[CekLang.lang];
-    const voices = window.speechSynthesis.getVoices()
-      .filter((voice) => voice.localService && voice.lang.replace("_", "-").toLowerCase().startsWith(tag.slice(0, 2)));
-    return voices.find((voice) => voice.lang.replace("_", "-") === tag) || voices[0] || null;
-  }
+  // Catatan jujur di tempat suara dipakai: kalau suaranya online, browser mengirim teks ini ke layanan suaranya.
+  const onlineNote = () => CekVoice.isOnline() && el("p", { className: "voice-online", text: t("voice.online") });
 
-  function stopVoice() {
-    currentUtterance = null;
-    clearTimeout(speakTimer);
-    if (hasSpeech) window.speechSynthesis.cancel();
-    const card = dom.task.querySelector(".voice-card");
-    if (card) card.classList.remove("is-speaking");
+  function narrate(step, card) {
+    const sentence = (piece) => (/[.!?]$/.test(piece.trim()) ? piece.trim() : `${piece.trim()}.`);
+    const text = [step.title, ...step.text].map(sentence).join(" ");
+    const listen = el("button", { type: "button", className: "vo-btn" }, [CekUI.icon("speaker"), el("span", { text: t("vo.listen") })]);
+    const bars = el("span", { className: "voice-bars", "aria-hidden": "true" }, Array.from({ length: 5 }, () => el("i")));
+    const say = () => CekVoice.speak(text, {
+      rate: CekSettings.voiceRate(),
+      pitch: 1.05,
+      onStart: () => card.classList.add("is-speaking"),
+      onEnd: () => card.classList.remove("is-speaking")
+    });
+    listen.addEventListener("click", () => {
+      if (card.classList.contains("is-speaking")) stopVoice();
+      else say();
+    });
+    CekVoice.ready(() => {
+      if (!card.isConnected || !CekVoice.available()) return;
+      card.prepend(el("div", { className: "vo-bar" }, [listen, bars, onlineNote()]));
+      if (CekVoice.coachOn()) say();
+    });
   }
 
   function speak(text, rate, card) {
-    const voice = localVoice();
-    if (!voice) return false;
-    stopVoice();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = voice;
-    utterance.lang = voice.lang;
-    utterance.rate = rate;
-    utterance.pitch = 0.8; // suara sedikit lebih berat untuk penelepon misterius
-    const done = () => {
-      if (currentUtterance !== utterance) return;
-      currentUtterance = null;
-      clearTimeout(speakTimer);
-      card.classList.remove("is-speaking");
-    };
-    utterance.addEventListener("end", done);
-    utterance.addEventListener("error", done);
-    currentUtterance = utterance;
-    card.classList.add("is-speaking");
-    speakTimer = setTimeout(done, (text.length * 110) / rate + 2000); // cadangan kalau "end" tidak pernah datang
-    window.speechSynthesis.speak(utterance);
-    return true;
+    return CekVoice.speak(text, {
+      rate,
+      pitch: 0.8, // suara sedikit lebih berat untuk penelepon misterius
+      onStart: () => card.classList.add("is-speaking"),
+      onEnd: () => card.classList.remove("is-speaking")
+    });
   }
 
   function voiceCard(step) {
@@ -130,7 +126,7 @@
         el("span", { className: "caller-art", "aria-hidden": "true", html: CekCoach.caller() }),
         el("span", { className: "voice-label" }, [el("small", { text: t("voice.calling") }), el("strong", { text: step.caller })])
       ]),
-      el("div", { className: "voice-bubble" }, [controls, text, el("div", { className: "voice-foot" }, [toggle, note])])
+      el("div", { className: "voice-bubble" }, [controls, text, el("div", { className: "voice-foot" }, [toggle, note]), onlineNote()])
     ]);
     const showText = (visible) => {
       text.hidden = !visible;
@@ -155,8 +151,11 @@
     kit.renderTask(step.question, "", quizOptions(step), t("materi.group"), "quiz", "think", voice.card);
     kit.setPrimary(t("common.check"), false, checkQuiz);
     // Langsung diputar seperti soal mendengar di Duolingo (pemain sudah mengetuk "Lanjut", jadi browser mengizinkan).
-    if (localVoice()) voice.say(CekSettings.voiceRate());
-    else voice.noVoice();
+    CekVoice.ready(() => {
+      if (!voice.card.isConnected) return;
+      if (CekVoice.available()) voice.say(CekSettings.voiceRate());
+      else voice.noVoice();
+    });
   }
 
   // Penjelasan jawaban benar ditulis untuk pemain yang memilihnya ("Tepat! ..."). Saat ditampilkan sebagai
@@ -196,14 +195,16 @@
     const after = CekLogic.recordMateri(before, materi.id, state.right);
     const saved = CekLogic.saveProgress(storage, after);
     const perfect = state.right === quizCount;
+    const streak = CekUI.addLessonStreak();
     CekKit.setProgress(dom.progress, steps.length, steps.length);
     // "Lanjut" ke materi berikutnya; setelah materi terakhir, tombol utamanya kembali ke beranda.
     const next = MATERI[MATERI.indexOf(materi) + 1];
     kit.showDone(Boolean(next));
     dom.task.replaceChildren(el("section", { className: "done", "aria-labelledby": "done-title" }, [
-      perfect && CekUI.confetti(),
+      perfect && CekUI.celebrate(),
       el("div", { className: "done-hero" }, CekUI.mascot(perfect ? "cheer" : "happy")),
       el("h1", { id: "done-title", text: t(perfect ? "materi.perfect" : "materi.done") }),
+      CekUI.streakNote(streak),
       el("div", { className: "stats" }, [
         CekUI.stat(t("common.xpEarned"), `+${after.xp - before.xp}`, "bolt", "gold"),
         CekUI.stat(t("materi.correct"), `${state.right}/${quizCount}`, "target", "green"),
@@ -217,7 +218,6 @@
   }
 
   CekUI.guardExit(() => Boolean(materi) && !dom.lesson.classList.contains("is-done"));
-  window.addEventListener("pagehide", stopVoice);
 
   if (materi) {
     CekKit.setProgress(dom.progress, 0, steps.length);

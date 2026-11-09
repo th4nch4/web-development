@@ -24,6 +24,16 @@ const STRINGS = {
   "settings.general": { id: "Umum", en: "General" },
   "settings.appearance": { id: "Tampilan", en: "Appearance" },
   "settings.language": { id: "Bahasa", en: "Language" },
+  "settings.sound": { id: "Suara", en: "Sound" },
+  "settings.music": { id: "Musik latar", en: "Background music" },
+  "settings.musicDesc": { id: "Musik pelan selama soal menunggu jawabanmu.", en: "Soft music while a question waits for your answer." },
+  "settings.narration": { id: "Narasi Coach Wall", en: "Coach Wall narration" },
+  "settings.narrationDesc": { id: "Coach Wall membacakan kartu materi saat muncul.", en: "Coach Wall reads the guide cards aloud when they appear." },
+  "settings.onlineVoice": { id: "Suara online browser", en: "Online browser voices" },
+  "settings.onlineVoiceDesc": {
+    id: "Kalau perangkatmu tidak punya suara bahasa ini, browser memakai suara online (mis. Google atau Microsoft). Yang dikirim hanya teks pelajaran, bukan datamu.",
+    en: "If your device has no voice for this language, the browser uses an online voice (e.g. Google or Microsoft). Only the lesson text is sent, never your data."
+  },
   "settings.soundTitle": { id: "Efek suara", en: "Sound effects" },
   "settings.soundDesc": { id: "Bunyi saat jawabanmu benar atau salah.", en: "A sound when your answer is right or wrong." },
   "settings.vibrate": { id: "Getar", en: "Vibration" },
@@ -37,8 +47,8 @@ const STRINGS = {
   "settings.seconds": { id: "{n} detik", en: "{n} seconds" },
   "settings.privacy": { id: "Data & privasi", en: "Data & privacy" },
   "settings.about": {
-    id: "Pesan, nama, dan nomor di pelajaran fiktif. Kuis tautan di materi memakai nama merek asli sebagai contoh situs resmi; alamat palsunya hanya teks dan tidak bisa diklik. Progres hanya disimpan di perangkat ini.",
-    en: "The messages, names, and numbers in the lessons are made up. The link quizzes in the guides use real brand names as examples of official sites; the fake addresses are plain text and can't be clicked. Progress is saved only on this device."
+    id: "Pesan, nama, dan nomor di pelajaran fiktif. Kuis tautan di materi memakai nama merek asli sebagai contoh situs resmi; alamat palsunya hanya teks dan tidak bisa diklik. Progres hanya disimpan di perangkat ini. Suara narasi bisa memakai suara online browser; yang dikirim hanya teks pelajaran.",
+    en: "The messages, names, and numbers in the lessons are made up. The link quizzes in the guides use real brand names as examples of official sites; the fake addresses are plain text and can't be clicked. Progress is saved only on this device. Narration may use an online browser voice; only the lesson text is sent."
   },
   "settings.storageNote": { id: "Browser ini tidak mengizinkan penyimpanan, jadi progres tidak akan tersimpan.", en: "This browser doesn't allow storage, so your progress won't be saved." },
   "settings.reset": { id: "Hapus progres", en: "Reset progress" },
@@ -51,6 +61,11 @@ const STRINGS = {
   "settings.motionDesc": { id: "Coach Wall dan peta bergerak. Matikan kalau bikin pusing.", en: "Coach Wall and the map move. Turn it off if it makes you dizzy." },
   "settings.confetti": { id: "Konfeti", en: "Confetti" },
   "settings.confettiDesc": { id: "Hujan kertas warna saat skormu sempurna.", en: "A shower of paper when your score is perfect." },
+  "settings.textSize": { id: "Ukuran teks", en: "Text size" },
+  "settings.textSizeDesc": { id: "Untuk pesan di HP simulasi, soal, dan jawaban.", en: "For messages in the practice phone, questions, and answers." },
+  "settings.textNormal": { id: "Normal", en: "Normal" },
+  "settings.textLarge": { id: "Besar", en: "Large" },
+  "settings.textXlarge": { id: "Paling besar", en: "Largest" },
   "settings.langTitle": { id: "Bahasa tampilan", en: "Display language" },
   "settings.langBlocked": { id: "Browser ini tidak mengizinkan penyimpanan, jadi bahasa belum bisa diganti.", en: "This browser doesn't allow storage, so the language can't be changed." },
   "settings.langNote": { id: "Halaman dimuat ulang. Pelajaran yang sedang berjalan diulang dari awal.", en: "The page reloads. A lesson in progress starts over." },
@@ -65,14 +80,15 @@ const STRINGS = {
   // ---------- Coach Wall, streak, dan keluar dari pelajaran ----------
   "coach.tap": { id: "Coach Wall, ketuk untuk tips", en: "Coach Wall, tap for a tip" },
   "coach.mapTips": {
-    id: ["Hai! Aku Coach Wall. Aku temenin kamu latihan, ya!", "Ketuk level yang ada tulisan Mulai buat lanjut.", "Ingat 5 pertanyaan: siapa, link, file, buru-buru, minta apa.", "Penipu suka bikin panik. Tarik napas dulu, baru cek.", "Bank nggak pernah minta kode OTP. Nggak pernah!", "Ragu? Tanya orang yang kamu percaya sebelum klik."],
-    en: ["Hi! I'm Coach Wall. I'll practice with you!", "Tap the level that says Start to keep going.", "Remember the 5 questions: who, link, file, rush, request.", "Scammers love panic. Take a breath, then check.", "Banks never ask for your OTP code. Never!", "Not sure? Ask someone you trust before you tap."]
+    id: ["Ketuk level yang ada tulisan Mulai buat latihan.", "Hai! Aku Coach Wall. Aku temenin kamu latihan, ya!", "Ingat 5 pertanyaan: siapa, link, file, buru-buru, minta apa.", "Penipu suka bikin panik. Tarik napas dulu, baru cek.", "Bank nggak pernah minta kode OTP. Nggak pernah!", "Ragu? Tanya orang yang kamu percaya sebelum klik."],
+    en: ["Tap the level that says Start to practice.", "Hi! I'm Coach Wall. I'll practice with you!", "Remember the 5 questions: who, link, file, rush, request.", "Scammers love panic. Take a breath, then check.", "Banks never ask for your OTP code. Never!", "Not sure? Ask someone you trust before you tap."]
   },
   "coach.lessonTips": {
     id: ["Baca pelan-pelan, nggak ada yang ngejar kok.", "Coba baca pesannya sekali lagi.", "Kamu pasti bisa!", "Salah juga nggak apa-apa, ini latihan."],
     en: ["Read slowly, nobody's rushing you.", "Try reading the message one more time.", "You've got this!", "Mistakes are fine, this is practice."]
   },
-  "streak.label": { id: "{n} jawaban benar beruntun", en: "{n} correct answers in a row" },
+  "streak.label": { id: "Streak: {n} level selesai", en: "Streak: {n} levels finished" },
+  "streak.up": { id: "Streak naik jadi {n}!", en: "Streak up to {n}!" },
   "exit.title": { id: "Tunggu, jangan pergi dulu!", en: "Wait, don't go yet!" },
   "exit.text": { id: "Kalau keluar sekarang, jawabanmu di sesi ini tidak disimpan.", en: "If you leave now, your answers in this session won't be saved." },
   "exit.stay": { id: "Lanjut belajar", en: "Keep learning" },
@@ -81,6 +97,30 @@ const STRINGS = {
 
   // ---------- Beranda dan peta level ----------
   "home.h1": { id: "CekDulu: jalur belajar memeriksa pesan", en: "CekDulu: a learning path for checking messages" },
+  "welcome.label": { id: "Selamat datang di CekDulu", en: "Welcome to CekDulu" },
+  "welcome.greet": { id: "Hai, aku Coach Wall! Aku temenin kamu latihan, ya.", en: "Hi, I'm Coach Wall! I'll practice with you." },
+  "landing.title": { id: "Kenali phishing.", en: "Spot the phish." },
+  "landing.lede": {
+    id: "Cek dulu sebelum klik: latihan mengenali pesan penipuan di HP simulasi, bareng Coach Wall. Semua pesannya fiktif.",
+    en: "Check before you tap: practice spotting scam messages on a simulated phone, with Coach Wall. Every message is made up."
+  },
+  "landing.start": { id: "Mulai belajar", en: "Start learning" },
+  "landing.continue": { id: "Lanjut belajar", en: "Keep learning" },
+  "welcome.promises": { id: "Janji privasi CekDulu", en: "CekDulu's privacy promise" },
+  "welcome.noLogin": { id: "Tanpa login", en: "No login" },
+  "welcome.noData": { id: "Datamu tidak dikirim", en: "Your data isn't sent" },
+  "welcome.local": { id: "Progres hanya di perangkat ini", en: "Progress stays on this device" },
+  "welcome.tryTitle": { id: "Cuma punya semenit? Coba dua ini dulu.", en: "Only have a minute? Try these two first." },
+  "welcome.tryShort": { id: "Coba cepat", en: "Quick try" },
+  "welcome.tryReal": { id: "Asli atau penipuan? Periksa dulu.", en: "Real or scam? Check it first." },
+  "welcome.tryCall": { id: "Angkat, dengarkan, lalu tebak triknya.", en: "Pick up, listen, then spot the trick." },
+  "welcome.realShort": { id: "Pesan asli atau bukan?", en: "Real message or not?" },
+  "welcome.callShort": { id: "Penelepon misterius", en: "Mystery caller" },
+  "welcome.fact": {
+    id: "548.093 laporan penipuan masuk ke Indonesia Anti-Scam Centre (IASC) dari 22 November 2024 sampai 29 April 2026.",
+    en: "548,093 scam reports reached the Indonesia Anti-Scam Centre (IASC) between November 22, 2024 and April 29, 2026."
+  },
+  "welcome.source": { id: "Sumber: RRI dan Kontan.", en: "Source: RRI and Kontan." },
   "map.worldKicker": { id: "Dunia {n} · {world}", en: "World {n} · {world}" },
   "map.worldLabel": { id: "Dunia {n}, {world}: {subtitle}", en: "World {n}, {world}: {subtitle}" },
   "map.level": { id: "Level {n}: {title}", en: "Level {n}: {title}" },
@@ -99,6 +139,23 @@ const STRINGS = {
   "map.reportLocked": { id: "Rapor, terbuka setelah satu pelajaran selesai", en: "Report, unlocks after you finish one lesson" },
   "map.materiWorld": { id: "Teluk Phishing", en: "Phishing Bay" },
   "map.materiSubtitle": { id: "Kenali jenis phishing", en: "Know the types of phishing" },
+  // Gelembung di atas level terkunci: kenapa masih terkunci, dan jalan ke level yang sedang dimainkan.
+  "lock.lesson": { id: "Selesaikan Level {n} dulu untuk membuka level ini.", en: "Finish Level {n} first to unlock this one." },
+  "lock.lessons": { id: "Selesaikan level di atasnya dulu, mulai dari Level {n}.", en: "Finish the levels above first, starting with Level {n}." },
+  "lock.quick": { id: "Selesaikan semua pelajaran di dunia ini dulu untuk membuka Ronde Kilat.", en: "Finish every lesson in this world first to unlock the Lightning Round." },
+  "lock.report": { id: "Selesaikan satu pelajaran dulu untuk membuka rapor.", en: "Finish one lesson first to unlock your report." },
+  "lock.go": { id: "Main Level {n}", en: "Play Level {n}" },
+
+  // ---------- Panel beranda di atas peta ----------
+  "dash.label": { id: "Ringkasan belajarmu", en: "Your learning summary" },
+  "dash.nextLevel": { id: "Selanjutnya · Level {n}", en: "Up next · Level {n}" },
+  "dash.nextMateri": { id: "Selanjutnya · Dunia 3", en: "Up next · World 3" },
+  "dash.allDone": { id: "Semua level selesai!", en: "Every level done!" },
+  "dash.allDoneText": { id: "Lihat rapormu, atau ulangi level untuk bintang penuh.", en: "See your report, or replay levels for full stars." },
+  "dash.progress": { id: "{done} dari {total} pelajaran selesai", en: "{done} of {total} lessons done" },
+  "dash.stars": { id: "Bintang", en: "Stars" },
+  "dash.materi": { id: "Materi", en: "Guides" },
+  "dash.questionsLede": { id: "Tanyakan ini setiap kali ragu dengan sebuah pesan.", en: "Ask these whenever a message makes you unsure." },
   "materi.cardDone": { id: "{title}, selesai, ulangi", en: "{title}, done, play again" },
 
   // ---------- HP simulasi ----------
@@ -239,6 +296,8 @@ const STRINGS = {
   "voice.slow": { id: "Putar pelan", en: "Play slowly" },
   "voice.show": { id: "Lihat teks", en: "Show text" },
   "voice.hide": { id: "Sembunyikan teks", en: "Hide text" },
+  "voice.online": { id: "Dibacakan suara online browser: hanya teks ini yang dikirim.", en: "Read by an online browser voice: only this text is sent." },
+  "vo.listen": { id: "Dengarkan", en: "Listen" },
   "voice.noVoice": { id: "Perangkat ini belum punya suara untuk bahasa ini, jadi teksnya ditampilkan.", en: "This device has no voice for this language yet, so the text is shown." },
 
   // ---------- Rapor ----------

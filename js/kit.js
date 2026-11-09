@@ -55,6 +55,7 @@ const CekKit = (() => {
     let cooldownTimer = null;
     let watched = null; // daftar jawaban yang sedang dipantau guliran-nya
     let refreshScroll = () => {};
+    let combo = 0; // jawaban benar beruntun di pelajaran ini (streak di bar atas baru bertambah saat pelajaran selesai)
 
     function watchOptions() {
       const list = dom.task.querySelector(".options");
@@ -88,14 +89,15 @@ const CekKit = (() => {
     });
 
     // Lembar bawah seperti Duolingo: Coach Wall bereaksi, seruan, judul hasil, satu kalimat.
-    // tone: good (hijau), partial (kuning, hampir benar), bad (merah). Hanya "good" yang menambah streak.
+    // tone: good (hijau), partial (kuning, hampir benar), bad (merah). Hanya "good" yang menambah combo.
     // xp: bonus yang didapat di soal ini. cheer: celetukan khusus; kosong = seruan acak.
     function showFeedback(tone, heading, text, xp = 0, cheer = "") {
-      const streak = CekUI.recordStreak(tone === "good");
-      const mood = CekUI.reaction(tone, streak);
+      combo = tone === "good" ? combo + 1 : 0;
+      const mood = CekUI.reaction(tone, combo);
       dom.lesson.classList.add("is-graded");
+      CekSound.music.stop(); // jawaban sudah masuk: musik menunggu berhenti
       dom.footer.className = `lesson-footer is-${tone}`;
-      dom.feedback.replaceChildren(...CekUI.feedback({ tone, heading, text, cheer, xp, streak, mood }));
+      dom.feedback.replaceChildren(...CekUI.feedback({ tone, heading, text, cheer, xp, combo, mood }));
       // Coach Wall di soal (kalau masih terlihat, mis. di layar lebar) ikut berekspresi sama.
       const taskMascot = dom.task.querySelector(".task-head .mascot");
       if (taskMascot) taskMascot.replaceWith(CekUI.mascot(mood));
@@ -129,12 +131,20 @@ const CekKit = (() => {
       watchOptions();
       // Pindahkan fokus ke soal baru supaya pengguna keyboard/pembaca layar tidak tersesat.
       heading.focus({ preventScroll: true });
+      // Musik pelan selama soal menunggu dijawab. Soal dengan elemen pembuka (penelepon di soal suara) tanpa musik,
+      // supaya suaranya terdengar jelas.
+      if (lead) CekSound.music.stop();
+      else CekSound.music.start();
     }
 
     // kind: "check" (boleh banyak, kotak centang), "radio" (pilih satu, bulatan),
     // atau kosong untuk pilihan tanpa kotak (mis. "Nggak ada yang salah").
     function optionButton(id, title, onClick, kind, iconId) {
-      return el("button", { type: "button", className: kind ? "option" : "option option-plain", "data-id": id, "aria-pressed": "false", onClick }, [
+      const tap = onClick && (() => {
+        CekSound.play("tap");
+        onClick();
+      });
+      return el("button", { type: "button", className: kind ? "option" : "option option-plain", "data-id": id, "aria-pressed": "false", onClick: tap }, [
         kind && el("span", { className: `option-${kind}`, "aria-hidden": "true" }),
         iconId && CekUI.questionIcon(iconId),
         el("span", { className: "option-text" }, [el("strong", { text: title })])
@@ -169,6 +179,7 @@ const CekKit = (() => {
      * tombol utama; false kalau tombol utamanya sendiri sudah kembali ke beranda.
      */
     function showDone(withHome = true) {
+      CekSound.music.stop();
       dom.lesson.classList.add("is-done");
       dom.footer.classList.add("is-done");
       const home = document.getElementById("home");
@@ -178,5 +189,5 @@ const CekKit = (() => {
     return { setPrimary, showFeedback, hideFeedback, renderTask, optionButton, syncPressed, lockOptions, showDone };
   }
 
-  return { create, shuffled, setProgress, toneOf };
+  return { create, shuffled, setProgress, toneOf, watchScroll };
 })();

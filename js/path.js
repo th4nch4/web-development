@@ -12,17 +12,67 @@
 
   const offsetOf = (position) => OFFSETS[position % OFFSETS.length];
 
+  // node: elemen level, atau [tombol, gelembung] untuk level terkunci (lihat lockedNode).
   function pathItem(node, label, position, badge, extra) {
     return el("li", {
       className: badge ? "path-item is-current" : "path-item",
       style: `--x: ${offsetOf(position)}px`
     }, [
       badge && el("span", { className: "node-badge", "aria-hidden": "true", text: badge }),
-      node,
+      ...[].concat(node),
       extra,
       el("span", { className: "node-label", "aria-hidden": "true", text: label })
     ]);
   }
+
+  // ---------- Level terkunci: diketuk, muncul gelembung "kenapa terkunci" + jalan ke level yang sedang dimainkan ----------
+  const currentScenario = SCENARIOS[current];
+  let openTip = null; // { button, tip } yang sedang terbuka
+
+  function closeTip(returnFocus) {
+    if (!openTip) return;
+    const { button, tip } = openTip;
+    tip.hidden = true;
+    button.setAttribute("aria-expanded", "false");
+    button.closest(".path-item").classList.remove("has-tip");
+    openTip = null;
+    if (returnFocus) button.focus();
+  }
+
+  /** Tombol level terkunci. label: nama level untuk pembaca layar; reason: kenapa masih terkunci. */
+  let tipCount = 0;
+
+  function lockedNode(iconName, label, reason, extraClass = "") {
+    tipCount += 1;
+    const tipId = `lock-tip-${tipCount}`;
+    const button = el("button", {
+      type: "button", className: `node node-locked ${extraClass}`.trim(), "aria-label": label,
+      "aria-expanded": "false", "aria-controls": tipId
+    }, icon(iconName));
+    const tip = el("div", { className: "lock-tip", id: tipId, hidden: true }, [
+      el("p", { className: "lock-tip-text" }, [icon("lock"), reason]),
+      currentScenario && el("a", {
+        className: "lock-go", href: `simulator.html?s=${encodeURIComponent(currentScenario.id)}`
+      }, t("lock.go", { n: current + 1 }))
+    ]);
+    button.addEventListener("click", () => {
+      const wasOpen = openTip && openTip.button === button;
+      closeTip(false);
+      if (wasOpen) return;
+      tip.hidden = false;
+      button.setAttribute("aria-expanded", "true");
+      button.closest(".path-item").classList.add("has-tip");
+      openTip = { button, tip };
+      CekSound.play("tap");
+    });
+    return [button, tip];
+  }
+
+  // Ketuk di luar gelembung menutupnya; Esc juga (fokus kembali ke levelnya).
+  document.addEventListener("click", (event) => {
+    if (openTip && !openTip.button.contains(event.target) && !openTip.tip.contains(event.target)) closeTip(false);
+  });
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeTip(true); });
 
   // Bintang ala game di bawah level yang sudah selesai (lihat CekLogic.lessonStars).
   function starRow(count) {
@@ -40,7 +90,7 @@
         href: `simulator.html?s=${encodeURIComponent(scenario.id)}`,
         "aria-label": done ? t("map.levelDone", { name, stars }) : t("map.levelStart", { name })
       }, [icon(scenario.icon), done && el("span", { className: "node-check" }, icon("check"))])
-      : el("span", { className: "node node-locked", role: "img", "aria-label": t("map.levelLocked", { name }) }, icon("lock"));
+      : lockedNode("lock", t("map.levelLocked", { name }), t(index - 1 === current ? "lock.lesson" : "lock.lessons", { n: current + 1 }));
     const badge = index === current ? t(doneCount === 0 ? "map.badgeStart" : "map.badgeContinue") : null;
     return pathItem(node, scenario.title, index, badge, done && starRow(stars));
   }
@@ -51,13 +101,14 @@
     const label = best === undefined ? t("map.quick") : t("map.quickScore", { score: best });
     const node = CekLogic.isQuickUnlocked(SCENARIOS, progress, unit.id)
       ? el("a", { className: "node node-quick", href: `kilat.html?unit=${unit.id}`, "aria-label": t("map.quickOpen", { label }) }, icon("bolt"))
-      : el("span", { className: "node node-locked node-quick-locked", role: "img", "aria-label": t("map.quickLocked") }, icon("bolt"));
+      : lockedNode("bolt", t("map.quickLocked"), t("lock.quick"), "node-quick-locked");
     return pathItem(node, label, position, null);
   }
 
   // Satu dunia di peta: langit dan kota, banner yang menempel saat digulir, lalu jalur levelnya.
   function worldSection(id, names, iconName, items) {
     return el("section", { className: `unit unit-${id} world world-${id}`, "aria-label": t("map.worldLabel", names) }, [
+      CekWorld.scenery(id),
       CekWorld.sky(id),
       el("div", { className: "unit-banner" }, [
         el("span", { className: "unit-icon", "aria-hidden": "true" }, icon(iconName)),
@@ -111,7 +162,7 @@
   function reportPath() {
     const node = doneCount > 0
       ? el("a", { className: "node node-trophy", href: "rapor.html", "aria-label": t("map.reportOpen") }, icon("trophy"))
-      : el("span", { className: "node node-locked node-trophy-locked", role: "img", "aria-label": t("map.reportLocked") }, icon("trophy"));
+      : lockedNode("trophy", t("map.reportLocked"), t("lock.report"), "node-trophy-locked");
     return el("ol", { className: "path path-end" }, [
       pathItem(node, t("map.report"), SCENARIOS.length, current === -1 ? t("map.badgeView") : null)
     ]);

@@ -104,6 +104,7 @@
       bigButton(t("quick.scam"), "btn-scam", () => answer(true))
     );
     if (state.timed) startTimer(timerBar.firstElementChild);
+    CekSound.music.start(); // musik pelan selama menunggu jawaban
   }
 
   function currentStreak() {
@@ -133,25 +134,26 @@
   // pickedScam: true/false, atau null kalau waktunya habis.
   function answer(pickedScam) {
     clearInterval(state.timer);
+    CekSound.music.stop();
     const item = items[state.index];
     const isRight = pickedScam === item.scam;
     const answers = [...state.answers, isRight];
     setState({ answers });
     setProgress(answers.length);
-    const streak = CekUI.recordStreak(isRight); // api streak di bar atas, berlanjut antar pelajaran
+    const combo = currentStreak(); // combo di ronde ini; streak di bar atas bertambah saat ronde selesai
     CekSound.play(isRight ? "good" : "bad");
     const quickCard = dom.main.querySelector(".quick-card");
     quickCard.classList.add(isRight ? "is-correct" : "is-wrong");
     // Coach Wall bereaksi: bersorak, jatuh hati saat combo, tepuk jidat kalau salah, kaget kalau waktunya habis.
     const tone = isRight ? "good" : "bad";
     const timedOut = pickedScam === null;
-    const mood = timedOut ? "oops" : CekUI.reaction(tone, streak);
+    const mood = timedOut ? "oops" : CekUI.reaction(tone, combo);
     dom.main.querySelector(".mascot").replaceWith(CekUI.mascot(mood));
     const verdict = t(item.scam ? "quick.isScam" : "quick.isReal");
     let heading = t(isRight ? "quick.right" : "quick.wrong", { verdict });
     if (timedOut) heading = t("quick.timeout", { verdict });
     dom.footer.className = `lesson-footer is-${tone}`;
-    dom.feedback.replaceChildren(...CekUI.feedback({ tone, heading, text: item.why, xp: CekLogic.XP_QUICK, streak, mood }));
+    dom.feedback.replaceChildren(...CekUI.feedback({ tone, heading, text: item.why, xp: CekLogic.XP_QUICK, combo, mood }));
     const isLast = state.index === items.length - 1;
     setButtons(bigButton(t(isLast ? "quick.seeScore" : "common.continue"), `btn-${tone}`, isLast ? finish : nextCard));
     dom.buttons.firstElementChild.focus();
@@ -170,12 +172,14 @@
     const after = CekLogic.recordQuick(before, unitId, score.right);
     const saved = CekLogic.saveProgress(storage, after);
     const great = score.right >= score.total - 1;
+    const streak = CekUI.addLessonStreak();
     dom.footer.className = "lesson-footer is-done";
     dom.feedback.replaceChildren();
     dom.main.replaceChildren(el("section", { className: "done", "aria-labelledby": "score-title" }, [
-      great && CekUI.confetti(),
+      great && CekUI.celebrate(),
       el("div", { className: "done-hero" }, CekUI.mascot(great ? "cheer" : "happy")),
       el("h1", { id: "score-title", tabindex: "-1", text: t(great ? "quick.great" : "quick.done") }),
+      CekUI.streakNote(streak),
       el("div", { className: "stats" }, [
         CekUI.stat(t("common.xpEarned"), `+${after.xp - before.xp}`, "bolt", "gold"),
         CekUI.stat(t("quick.score"), `${score.right}/${score.total}`, "target", "green"),

@@ -153,6 +153,73 @@ const CekWorld = (() => {
       html: `<svg viewBox="0 0 64 64"><g ${OUTLINE}>${PROPS[names[index % names.length]]}</g></svg>` });
   }
 
+  // ---------- Pemandangan di tanah peta: mengisi sisi kosong, bergerak pelan, bereaksi saat diketuk ----------
+  // Hiasan diam di pita kiri dan kanan (layar lebar saja, lihat css/world.css), posisinya acak tapi tetap
+  // (benih per dunia). Penggerak per dunia: mobil kurir (Dunia 1), kunang-kunang (Dunia 2), ikan dan ombak (Dunia 3).
+  const SCENERY = {
+    1: ["tree", "house", "bush", "box", "mailbox", "tree", "envelope", "bush", "house", "tree", "box", "van",
+      "bush", "tree", "house", "mailbox", "tree", "bush", "box", "house", "envelope", "tree"],
+    2: ["safe", "padlock", "shield", "key", "bubbles", "phone", "padlock", "key", "shield", "safe", "bubbles",
+      "phone", "key", "padlock", "shield", "safe", "bubbles", "key"],
+    3: ["buoy", "bottle", "anchor", "boat", "buoy", "fish", "bottle", "hook", "anchor", "boat", "fish", "buoy",
+      "bottle", "boat", "anchor", "fish", "hook", "buoy"]
+  };
+  const FIREFLY = '<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="3.2" fill="currentColor"/></svg>';
+  const WAVE = '<svg viewBox="0 0 120 12" preserveAspectRatio="none"><path d="M0 6q7.5-6 15 0t15 0 15 0 15 0 15 0 15 0 15 0 15 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+
+  function seeded(seed) {
+    let value = seed;
+    return () => {
+      value = (value * 9301 + 49297) % 233280;
+      return value / 233280;
+    };
+  }
+
+  const sticker = (name) => `<svg viewBox="0 0 64 64"><g ${OUTLINE}>${PROPS[name]}</g></svg>`;
+
+  function movers(unitId, rand) {
+    if (unitId === 1) {
+      return [0.3, 0.72].map((y, i) => el("span", {
+        className: `scene-mover mover-van${i % 2 ? " is-back" : ""}`, style: `--y:${y}; --delay:${-i * 9}s`, html: sticker("van")
+      }));
+    }
+    if (unitId === 2) {
+      return Array.from({ length: 9 }, () => el("span", {
+        className: "scene-mover mover-firefly",
+        style: `--x:${(rand() * 96 + 2).toFixed(1)}; --y:${rand().toFixed(2)}; --delay:${(-rand() * 6).toFixed(2)}s`,
+        html: FIREFLY
+      }));
+    }
+    return [
+      ...[0.18, 0.46, 0.74].map((y) => el("span", { className: "scene-mover mover-wave", style: `--y:${y}; --delay:${(-rand() * 4).toFixed(2)}s`, html: WAVE })),
+      ...[0.12, 0.88, 0.3].map((x, i) => el("span", {
+        className: "scene-mover mover-fish", style: `--x:${x * 100}; --y:${(0.2 + i * 0.28).toFixed(2)}; --delay:${(-i * 1.7).toFixed(1)}s`, html: sticker("fish")
+      }))
+    ];
+  }
+
+  function scenery(unitId) {
+    const names = SCENERY[unitId];
+    if (!names) return null;
+    const rand = seeded(unitId * 97 + 13);
+    const items = names.map((name, i) => el("span", {
+      className: `scene-item ${i % 2 === 0 ? "is-left" : "is-right"}`,
+      style: `--r:${rand().toFixed(2)}; --y:${((Math.floor(i / 2) + rand() * 0.8) / Math.ceil(names.length / 2)).toFixed(3)}; --size:${52 + Math.round(rand() * 34)}px; --i:${i}`,
+      html: sticker(name)
+    }));
+    const layer = el("div", { className: "world-scenery", "aria-hidden": "true" }, [...items, ...movers(unitId, rand)]);
+    // Diketuk: membal sekali dan berbunyi "tuk" (hanya hiasan, jadi tidak ikut urutan Tab).
+    layer.addEventListener("click", (event) => {
+      const target = event.target.closest(".scene-item, .scene-mover");
+      if (!target) return;
+      target.classList.remove("is-boing");
+      void target.offsetWidth; // mulai ulang animasi
+      target.classList.add("is-boing");
+      CekSound.play("tap");
+    });
+    return layer;
+  }
+
   /** Coach Wall menunggu di samping level yang sedang dimainkan dan melambai; ketuk dia untuk tips. */
   function coach(index, x) {
     return el("span", { className: "world-prop world-coach", style: `--side: ${sideOf(index, x)}` },
@@ -227,5 +294,5 @@ const CekWorld = (() => {
 
   const MATERI_WORLD = 3; // Dunia 3 "Teluk Phishing": materi jenis-jenis phishing
 
-  return { sky, prop, coach, mountRoads, mountTransitions, decoratePage, MATERI_WORLD };
+  return { sky, prop, coach, scenery, mountRoads, mountTransitions, decoratePage, MATERI_WORLD };
 })();

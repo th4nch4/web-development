@@ -50,7 +50,64 @@ a.node:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--unit-dark,
   border-radius: 50%;
 }
 .node-label { max-width: 170px; margin-top: 12px; font-size: 15px; font-weight: 700; line-height: 1.3; text-align: center; }
-.node-locked + .node-label { color: var(--muted); }
+.node-locked ~ .node-label { color: var(--muted); }
+
+/* Level terkunci adalah tombol: diketuk, muncul gelembung "kenapa terkunci" di atasnya (js/path.js). */
+button.node { padding: 0; font: inherit; border: 0; cursor: pointer; }
+button.node:active { transform: translateY(4px); box-shadow: 0 4px 0 var(--french); }
+.path-item.has-tip { z-index: 5; } /* di atas level dan hiasan lain, di bawah banner dunia yang menempel */
+.lock-tip {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  width: min(300px, 100cqi - 32px);
+  padding: 12px 14px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 6px 0 var(--line);
+  /* Di tengah jalur (bukan di tengah level) supaya tidak keluar layar; ekornya menunjuk ke level. */
+  translate: calc(-50% - var(--x, 0px)) 0;
+  animation: lock-pop .22s cubic-bezier(.3, 0, .3, 1.3);
+}
+.is-current .lock-tip { bottom: calc(100% + 48px); }
+.lock-tip::after {
+  content: "";
+  position: absolute;
+  left: calc(50% + var(--x, 0px));
+  bottom: -9px;
+  width: 14px;
+  height: 14px;
+  background: var(--bg);
+  border-right: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  transform: translateX(-50%) rotate(45deg);
+}
+.lock-tip-text { display: flex; align-items: flex-start; gap: 8px; font-size: 16px; font-weight: 700; line-height: 1.4; }
+.lock-tip-text .icon { flex: none; margin-top: 2px; color: var(--muted); }
+.lock-tip-text .icon svg { width: 18px; height: 18px; }
+.lock-go {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--on-brand);
+  background: var(--brand);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--brand-dark);
+}
+.lock-go:active { transform: translateY(4px); box-shadow: none; }
+@keyframes lock-pop { from { opacity: 0; transform: translateY(8px) scale(.92); } }
 .node-badge {
   position: absolute;
   top: -40px;
@@ -134,20 +191,91 @@ a.node:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--unit-dark,
 @keyframes w-twinkle { 50% { transform: scale(.35) rotate(45deg); } }
 .world .path { position: relative; margin-top: calc(var(--sky-h) - 86px); }
 
-/* Hiasan di sisi kosong: dihitung dari tengah panel, lalu dikurangi geseran level (--x). */
-.world-prop {
+/* ---------- Pemandangan di tanah (CekWorld.scenery): di bawah jalur dan jalan, di atas warna tanah ---------- */
+.world { isolation: isolate; } /* z-index -1 di bawah tetap di dalam dunia */
+.world-scenery { position: absolute; inset: var(--sky-h) 0 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.scene-item, .scene-mover { position: absolute; pointer-events: auto; cursor: pointer; }
+/* Tekstur tanah halus khas tiap dunia (rumput, bintang kecil, riak air). Warnanya dari --w-texture, bentuknya mask. */
+.world-1 { --w-texture: var(--seashell); --w-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M18 30l3-8 3 8M21 30v-9M74 64l3-7 3 7M98 100l2-6 2 6M38 92l3-8 3 8M41 92v-8'/%3E%3C/g%3E%3Ccircle cx='60' cy='20' r='2'/%3E%3Ccircle cx='104' cy='44' r='2'/%3E%3Ccircle cx='12' cy='72' r='2'/%3E%3C/svg%3E"); }
+.world-2 { --w-texture: var(--powder); --w-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M24 18q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6zM86 70q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3Ccircle cx='70' cy='26' r='1.8'/%3E%3Ccircle cx='30' cy='86' r='1.8'/%3E%3Ccircle cx='106' cy='104' r='1.8'/%3E%3C/svg%3E"); }
+.world-3 { --w-texture: var(--seashell); --w-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='120'%3E%3Cg fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M14 30q6-5 12 0t12 0M84 68q6-5 12 0t12 0M40 100q6-5 12 0'/%3E%3C/g%3E%3C/svg%3E"); }
+:root[data-theme="dark"] .world-1, :root[data-theme="dark"] .world-2, :root[data-theme="dark"] .world-3 { --w-texture: var(--slate); }
+.world-scenery::before {
+  content: "";
   position: absolute;
-  top: 0;
+  inset: 0;
+  background: var(--w-texture);
+  -webkit-mask: var(--w-pattern) 0 0 / 120px 120px repeat;
+  mask: var(--w-pattern) 0 0 / 120px 120px repeat;
+}
+.scene-item svg, .scene-mover svg { display: block; width: 100%; height: 100%; }
+/* Hiasan diam: pita kiri dan kanan di luar jalur (jalur + hiasan levelnya selebar +-300px dari tengah). */
+.scene-item {
+  top: calc(var(--y) * (100% - 90px) + 10px);
+  width: var(--size);
+  height: var(--size);
+  animation: scene-sway 4.6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -.53s);
+  transform-origin: 50% 100%;
+}
+.scene-item.is-left { left: calc(2cqi + var(--r) * (46cqi - 330px)); }
+.scene-item.is-right { right: calc(2cqi + var(--r) * (46cqi - 330px)); }
+@keyframes scene-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg) translateY(-2px); } }
+@container (max-width: 760px) { .scene-item { display: none; } } /* layar sempit: sisi jalur sudah terisi */
+
+/* Diketuk: membal sambil berputar sedikit. */
+.scene-item.is-boing, .scene-mover.is-boing { animation: scene-boing .55s cubic-bezier(.3, 0, .3, 1.5); }
+@keyframes scene-boing { 0% { transform: none; } 35% { transform: translateY(-16px) rotate(-8deg) scale(1.1); } 70% { transform: translateY(2px) scale(1.05, .92); } 100% { transform: none; } }
+
+/* Dunia 1: mobil kurir melaju melintasi peta (satu ke kanan, satu kembali ke kiri). */
+.mover-van { top: calc(var(--y) * 100%); left: 0; width: 70px; height: 70px; animation: van-drive 18s linear infinite; animation-delay: var(--delay); }
+.mover-van.is-back { animation-name: van-back; }
+.mover-van svg { animation: van-bump .45s ease-in-out infinite alternate; }
+.mover-van.is-back svg { animation-name: van-bump-back; }
+@keyframes van-drive { from { transform: translateX(-90px); } to { transform: translateX(calc(100cqi + 20px)); } }
+@keyframes van-back { from { transform: translateX(calc(100cqi + 20px)); } to { transform: translateX(-90px); } }
+@keyframes van-bump { to { transform: translateY(-2px); } }
+@keyframes van-bump-back { from { transform: scaleX(-1); } to { transform: scaleX(-1) translateY(-2px); } }
+
+/* Dunia 2: kunang-kunang melayang dan berkelip di malam benteng. */
+.mover-firefly { top: calc(var(--y) * (100% - 20px)); left: calc(var(--x) * 1%); width: 12px; height: 12px; color: var(--wheat); animation: firefly 7s ease-in-out infinite; animation-delay: var(--delay); }
+:root:not([data-theme="dark"]) .mover-firefly { color: var(--french); }
+@keyframes firefly {
+  0%, 100% { transform: translate(0, 0); opacity: .25; }
+  25% { transform: translate(18px, -14px); opacity: 1; }
+  50% { transform: translate(-6px, -26px); opacity: .45; }
+  75% { transform: translate(-20px, -8px); opacity: 1; }
+}
+
+/* Dunia 3: ombak bergelombang dan ikan melompat dari laut. */
+.mover-wave { top: calc(var(--y) * 100%); left: -60px; right: -60px; height: 12px; color: var(--seashell); animation: wave-roll 5s ease-in-out infinite alternate; animation-delay: var(--delay); pointer-events: none; }
+:root[data-theme="dark"] .mover-wave { color: var(--slate); }
+@keyframes wave-roll { to { transform: translateX(48px); } }
+.mover-fish { top: calc(var(--y) * 100%); left: calc(var(--x) * 1% - 24px); width: 48px; height: 48px; animation: fish-jump 4.2s cubic-bezier(.4, 0, .6, 1) infinite; animation-delay: var(--delay); }
+@keyframes fish-jump {
+  0%, 55%, 100% { transform: translateY(18px) rotate(40deg); opacity: 0; }
+  62% { transform: translateY(0) rotate(-20deg); opacity: 1; }
+  72% { transform: translate(14px, -30px) rotate(10deg); opacity: 1; }
+  82% { transform: translate(28px, 0) rotate(50deg); opacity: 1; }
+  88% { transform: translate(32px, 18px) rotate(70deg); opacity: 0; }
+}
+
+
+/* Hiasan di sisi kosong level: menempel di samping levelnya, setinggi tengah tombol level, jadi ikut
+   jalur yang berliku (bukan berbaris lurus di satu kolom). --gap = jarak tengah level ke tengah hiasan. */
+.world-prop {
+  --gap: 104px; /* setengah level (40) + celah (30) + setengah hiasan (34) */
+  position: absolute;
+  top: 2px;
   left: 50%;
   width: 68px;
   height: 68px;
   pointer-events: none;
-  /* Di layar lebar hiasan tetap dekat jalur, tidak lari ke tepi layar. */
-  transform: translateX(calc(var(--side) * min(50cqi - 46px, 234px) - var(--x, 0px) - 50%));
+  transform: translateX(calc(var(--side) * var(--gap) - 50%));
 }
 .world-prop svg { width: 100%; height: 100%; animation: bob 3s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -.7s); }
 /* Coach Wall menunggu di samping level yang sedang dimainkan; bisa diketuk (tips muncul di gelembung). */
-.world-coach { z-index: 4; width: 96px; height: 96px; pointer-events: auto; }
+.world-coach { --gap: 118px; top: -14px; z-index: 4; width: 96px; height: 96px; pointer-events: auto; } /* di luar cincin level */
 .world-coach .coach-wrap, .world-coach .coach-btn { width: 100%; height: 100%; }
 .world-coach .coach-tip { max-width: 200px; }
 
@@ -160,7 +288,7 @@ a.node:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--unit-dark,
   border: 2px solid var(--violet);
 }
 :root[data-theme="dark"] .world .node-label { border-color: var(--slate); }
-.world .node-locked + .node-label { color: var(--muted); border-color: var(--line); }
+.world .node-locked ~ .node-label { color: var(--muted); border-color: var(--line); }
 .world .node-locked { border: 3px solid var(--seashell); }
 :root[data-theme="dark"] .world .node-locked { border-color: var(--graphite); }
 /* Ronde Kilat berwarna wheat: diberi tepi violet, dan di Dunia 1 (tanah wheat) isinya seashell supaya tidak tenggelam. */

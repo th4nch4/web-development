@@ -136,6 +136,11 @@ const CekLogic = (() => {
     return scenarios.filter((s) => s.unit === unitId).every((s) => isDone(progress, s.id));
   }
 
+  /** Pemain baru: belum menyelesaikan pelajaran, materi, atau Ronde Kilat apa pun (beranda menampilkan sambutan). */
+  function isFresh(progress) {
+    return [progress.lessons, progress.materi, progress.quick].every((record) => Object.keys(record || {}).length === 0);
+  }
+
   function isDone(progress, scenarioId) {
     return Boolean(progress.lessons[scenarioId]);
   }
@@ -274,6 +279,7 @@ const CekLogic = (() => {
     isQuickUnlocked,
     XP_QUICK,
     isDone,
+    isFresh,
     lessonStars,
     materiStars,
     isUnlocked,

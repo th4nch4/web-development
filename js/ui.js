@@ -71,6 +71,7 @@ const CekUI = (() => {
     trash: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4h5v2.5M6.5 6.5l1 14h9l1-14M10 10.5v6M14 10.5v6"/></g>',
     // Roda gigi dari Feather Icons (lisensi MIT).
     gear: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>',
+    device: '<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></g>',
     home: '<path d="M3.5 11.5L12 4l8.5 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V20h4.5v-5h3v5H18v-9.5" fill="currentColor"/>'
   };
 
@@ -111,7 +112,10 @@ const CekUI = (() => {
       void face.offsetWidth; // mulai ulang animasi membal
       face.classList.add("is-poked");
       clearTimeout(hideTimer);
-      hideTimer = setTimeout(() => { bubble.textContent = ""; }, TIP_MS);
+      // data-hold: lama tampil khusus (gelembung yang terbuka sendiri di kunjungan pertama), sekali pakai.
+      const hold = Number(button.dataset.hold) || TIP_MS;
+      delete button.dataset.hold;
+      hideTimer = setTimeout(() => { bubble.textContent = ""; }, hold);
     });
     return el("span", { className: "coach-wrap" }, [button, bubble]);
   }
@@ -125,14 +129,20 @@ const CekUI = (() => {
     })));
   }
 
+  /** Perayaan skor sempurna: fanfare + tepuk tangan (js/sound.js) dan konfeti (kalau tidak dimatikan). */
+  function celebrate() {
+    CekSound.play("celebrate");
+    return confetti();
+  }
+
   /**
    * Ekspresi Coach Wall setelah pemain menjawab.
    * tone: "good" (benar), "partial" (hampir: sebagian benar di soal pilih banyak), "bad" (salah).
    */
-  function reaction(tone, streak = 0) {
+  function reaction(tone, combo = 0) {
     if (tone === "partial") return "close";
     if (tone !== "good") return "sad";
-    return streak >= 3 ? "love" : "cheer";
+    return combo >= 3 ? "love" : "cheer";
   }
 
   const pick = (list) => list[Math.floor(Math.random() * list.length)];
@@ -144,9 +154,10 @@ const CekUI = (() => {
 
   /**
    * Isi lembar hasil ala Duolingo: Coach Wall bereaksi, seruan (+XP, combo), judul hasil, satu kalimat penjelasan.
+   * combo: jawaban benar beruntun di pelajaran yang sedang dimainkan (bukan streak di bar atas).
    * cheer: celetukan khusus; kosong = seruan acak. mood: paksa ekspresi tertentu (mis. "oops" saat waktu habis).
    */
-  function feedback({ tone, heading, text, cheer = "", xp = 0, streak = 0, mood = reaction(tone, streak) }) {
+  function feedback({ tone, heading, text, cheer = "", xp = 0, combo = 0, mood = reaction(tone, combo) }) {
     const t = CekLang.t;
     const look = TONE[tone] || TONE.bad;
     return [
@@ -155,7 +166,7 @@ const CekUI = (() => {
         el("p", { className: cheer ? "feedback-cheer is-quip" : "feedback-cheer" }, [
           cheer || pick(CekLang.list(look.cheers)),
           tone === "good" && xp > 0 && el("span", { className: "xp-pop", text: `+${xp} XP` }),
-          tone === "good" && streak >= 2 && el("span", { className: "combo" }, [icon("fire"), t("feedback.combo", { n: streak })])
+          tone === "good" && combo >= 2 && el("span", { className: "combo" }, [icon("fire"), t("feedback.combo", { n: combo })])
         ]),
         el("h2", {}, [icon(look.icon), heading]),
         el("p", { text })
@@ -252,8 +263,9 @@ const CekUI = (() => {
     });
   }
 
-  // ---------- Streak: jawaban benar beruntun, ditampilkan sebagai api di bar atas ----------
-  // Disimpan terpisah dari progres supaya tetap jalan antar pelajaran, materi, dan Ronde Kilat.
+  // ---------- Streak: level yang diselesaikan, ditampilkan sebagai api di bar atas ----------
+  // Bertambah satu setiap pelajaran, materi, atau Ronde Kilat selesai (bukan per soal). Jawaban salah tidak
+  // mengembalikannya ke 0; hanya "Hapus progres" yang menghapusnya. Disimpan terpisah dari progres.
 
   const STREAK_KEY = "cekdulu.streak";
   let memoryStreak = 0; // cadangan kalau penyimpanan diblokir
@@ -295,14 +307,18 @@ const CekUI = (() => {
     slot.replaceChildren(chip);
   }
 
-  /** Catat satu jawaban: benar menambah streak, salah atau hampir mengembalikannya ke 0. */
-  function recordStreak(isRight) {
+  /** Satu level selesai: streak bertambah satu, apinya membal (atau berganti warna). @returns {number} streak baru */
+  function addLessonStreak() {
     const before = streakValue();
-    const value = isRight ? before + 1 : 0;
+    const value = before + 1;
     saveStreak(value);
-    const levelUp = value > before && streakTier(value) !== streakTier(before);
-    renderStreak(value, levelUp ? "is-levelup" : value > 0 ? "is-bump" : "");
+    renderStreak(value, streakTier(value) !== streakTier(before) ? "is-levelup" : "is-bump");
     return value;
+  }
+
+  /** Baris "Streak naik jadi N!" di layar selesai, dengan api sewarna api di bar atas. */
+  function streakNote(value) {
+    return el("p", { className: `streak-note streak-${streakTier(value)}` }, [icon("fire"), CekLang.t("streak.up", { n: value })]);
   }
 
   function resetStreak() {
@@ -313,7 +329,7 @@ const CekUI = (() => {
   document.addEventListener("DOMContentLoaded", () => renderStreak(streakValue()));
 
   return {
-    el, icon, questionIcon, mascot, coach, reaction, feedback, confetti, xpChip, stat, getStorage,
-    ask, openModal, settled, guardExit, isSessionActive: () => sessionActive(), streakValue, recordStreak, resetStreak
+    el, icon, questionIcon, mascot, coach, reaction, feedback, confetti, celebrate, xpChip, stat, getStorage,
+    ask, openModal, settled, guardExit, isSessionActive: () => sessionActive(), streakValue, addLessonStreak, streakNote, resetStreak
   };
 })();

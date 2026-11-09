@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/world.css">
   <link rel="stylesheet" href="css/coach.css">
   <link rel="stylesheet" href="css/dialog.css">
+  <link rel="stylesheet" href="css/welcome.css">
   <script src="js/sound.js"></script>
   <script src="js/strings.js"></script>
   <script src="js/lang.js"></script>
@@ -27,10 +28,12 @@
 
     <section class="learn" aria-labelledby="learn-title">
       <h1 class="visually-hidden" id="learn-title" data-i18n="home.h1">CekDulu: jalur belajar memeriksa pesan</h1>
+      <div id="welcome"></div>
       <div id="units"></div>
     </section>
   </main>
 
+  <script>CekLang.load("questions")</script> <!-- js/questions.js atau js/en/questions.js (panel beranda) -->
   <script>CekLang.load("scenarios")</script> <!-- js/scenarios.js atau js/en/scenarios.js -->
   <script>CekLang.load("materi")</script> <!-- js/materi.js atau js/en/materi.js -->
   <script src="js/logic.js"></script>
@@ -38,5 +41,6 @@
   <script src="js/ui.js"></script>
   <script src="js/world.js"></script>
   <script src="js/path.js"></script>
+  <script src="js/welcome.js"></script>
 </body>
 </html>

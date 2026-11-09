@@ -22,6 +22,7 @@ Klik dua kali `index.html`, atau pakai Live Server di VS Code. Tidak perlu insta
 | File | Isi | Pemegang |
 |---|---|---|
 | `index.html` + `js/path.js` | Beranda: peta level. Dunia 1 dan 2 berisi pelajaran (berurutan), Dunia 3 "Teluk Phishing" berisi materi (urutan bebas) | Ketua |
+| `js/welcome.js` + `css/welcome.css` | Sambutan beranda: Coach Wall menyapa, janji privasi, fakta IASC, dan jalan cepat (pesan asli + penelepon misterius) di layar kunci mini. Setelah ada progres menyusut jadi janji privasi + jalan cepat yang belum dicoba | Ketua |
 | `js/world.js` | Gambar dunia di peta (langit, kota, laut, hiasan), jalan berliku, transisi masuk level | Tampilan |
 | `materi.html` + `js/belajar.js` | Materi "Kenali jenis phishing": kartu penjelasan, mini kuis, dan soal suara penelepon misterius | Ketua |
 | `js/materi.js` | **Isi materi phishing** (Vishing, Email, SMS, Chat & Medsos, QR), termasuk kalimat penelepon di soal suara | Konten |
@@ -58,7 +59,7 @@ Jangan menambah warna lain tanpa persetujuan ketua. Pakai variabel CSS (`var(--f
 Pengecualian yang sudah disetujui ketua:
 - mode gelap memakai latar abu-abu gelap (`--charcoal`, `--graphite`, `--slate`), bukan ungu;
 - status jawaban: hijau benar (`--green`), kuning hampir (`--yellow`), merah salah (`--red`);
-- api streak: oranye (1-2 benar beruntun), biru (3-4), pink (5 ke atas);
+- api streak (jumlah level selesai): oranye (1-2), biru (3-4), pink (5 ke atas);
 - warna kulit, rambut, dan peluit Coach Wall (hanya di `js/coach.js`).
 
 Status tidak hanya ditunjukkan warna: setiap pilihan yang dinilai juga diberi label teks (Benar, Terlewat, Keliru).
@@ -86,5 +87,6 @@ Tes E2E memainkan semuanya di 4 ukuran layar, lalu sekali lagi dalam bahasa Engl
 Tes ini juga memastikan tidak ada error JavaScript, tidak ada permintaan jaringan keluar,
 tidak ada jendela bawaan browser (alert/confirm), klik ganda tidak melompati umpan balik,
 halaman soal tidak pernah digulir (HP simulasi dan pertanyaan tetap di tempat, hanya daftar jawaban
-yang boleh digulir), Pengaturan dan dialog keluar bekerja, streak bertambah,
+yang boleh digulir), Pengaturan dan dialog keluar bekerja, streak bertambah satu per level selesai,
+level terkunci menjelaskan alasannya, ukuran teks paling besar tetap muat satu layar,
 soal suara tetap bisa dijawab tanpa suara, dan hapus progres benar-benar menghapus.
