@@ -115,6 +115,7 @@
 
   function voiceCard(step) {
     const text = el("p", { className: "voice-text", id: "voice-text", text: `"${step.line}"`, hidden: true });
+    CekKit.watchScroll(text); // di layar pendek kalimatnya digulir (css/coach.css)
     const toggle = el("button", { type: "button", className: "link-btn voice-toggle", "aria-controls": "voice-text", "aria-expanded": "false", text: t("voice.show") });
     const note = el("p", { className: "voice-note", text: t("voice.noVoice"), hidden: true });
     const play = el("button", { type: "button", className: "voice-play", "aria-label": t("voice.play") }, CekUI.icon("speaker"));

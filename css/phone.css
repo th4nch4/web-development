@@ -12,6 +12,7 @@
   background: var(--violet);
   border-radius: 60px;
   box-shadow: 0 0 0 3px var(--french); /* bingkai titanium */
+  container: phone / inline-size; /* isi header menyesuaikan lebar HP (@container phone di bawah) */
 }
 .phone::before, .phone::after { content: ""; position: absolute; width: 4px; background: var(--french); }
 .phone::before { right: -7px; top: 160px; height: 84px; border-radius: 0 3px 3px 0; } /* tombol daya */
@@ -134,7 +135,6 @@
       min(100cqh - 16px, (100cqw - 16px) * 2.1, 360px * var(--text-zoom, 1) * 2.1),
       min(260px * 2.1, (100cqh - 16px) * 1.25)
     );
-    container: phone / inline-size;
     display: flex;
     flex-direction: column;
     width: max(260px, var(--phone-height) / 2.1);
@@ -142,10 +142,10 @@
   }
   #phone-slot .screen { flex: 1 1 0; min-height: 0; aspect-ratio: auto; }
 }
-/* HP ramping (laptop dengan layar pendek): status bar dirapatkan supaya sinyal dan baterai tidak tertutup
-   Dynamic Island, ikon video/telepon disembunyikan supaya nomor pengirim (petunjuk soal) terbaca utuh,
-   dan bar ketik dirapatkan supaya "Ketik pesan" tetap satu baris. */
-@container phone (max-width: 310px) {
+/* HP ramping (laptop dengan layar pendek, HP selebar 360px ke bawah, HP miring): status bar dirapatkan supaya
+   sinyal dan baterai tidak tertutup Dynamic Island, ikon video/telepon disembunyikan supaya nomor pengirim
+   (petunjuk soal) terbaca utuh, dan bar ketik dirapatkan supaya "Ketik pesan" tetap satu baris. */
+@container phone (max-width: 320px) {
   .status-bar { padding-inline: 24px 18px; }
   .status-icons { gap: 3px; }
   .status-icons svg { width: 14px; height: 14px; }
@@ -154,9 +154,13 @@
   .chat-action { display: none; }
   .chat-input { gap: 8px; padding-inline: 10px; }
   .chat-field { min-width: 0; overflow: hidden; white-space: nowrap; }
-  /* Teks diperbesar: nama pengirim boleh dua baris daripada terpotong; fotonya mengalah. */
+  /* Nama pengirim boleh dua baris daripada terpotong. Teks diperbesar: fotonya mengalah. */
   .chat-title .tap-sender { line-height: 1.25; white-space: normal; }
   :root:is([data-text="large"], [data-text="xlarge"]) .chat-header .avatar { display: none; }
+}
+/* HP sangat ramping (HP miring): foto pengirim juga mengalah supaya nomornya muat. */
+@container phone (max-width: 270px) {
+  .chat-header .avatar { display: none; }
 }
 /* Teks diperbesar di HP yang tidak selebar aslinya: ikon video/telepon mengalah untuk nomor pengirim. */
 @container phone (max-width: 400px) {
@@ -183,4 +187,15 @@
   .lock-screen { padding: 12px; }
   .lock-time { font-size: 44px; }
   .lock-date { margin-bottom: 14px; }
+}
+/* HP dengan layar pendek (mis. iPhone SE, Safari dengan bar bawah, HP miring): ruang HP simulasi kecil, jadi
+   hiasan disembunyikan supaya isi pesannya yang terlihat: jam dan tanggal layar kunci (wallpaper-nya tetap)
+   dan foto di header SMS (nomornya tetap). */
+@media (max-width: 859px) and (max-height: 820px) {
+  .lock-screen { padding: 10px; }
+  .lock-time, .lock-date { display: none; }
+  .sms-header { padding-bottom: 4px; }
+  .sms-header .chat-back { top: 4px; }
+  .sms-contact .avatar { display: none; }
+  .sms-stamp { margin-bottom: 0; }
 }

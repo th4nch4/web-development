@@ -245,6 +245,35 @@
   .voice-slow { width: 44px; height: 44px; }
   .voice-text { margin-top: 6px; font-size: 15px; }
 }
+/* Layar pendek (HP kecil, HP miring): kalimat penelepon yang panjang digulir di dalam gelembungnya, seperti
+   pesan di HP simulasi, supaya pilihan jawaban tetap kebagian ruang. Ujung bawahnya dipudarkan (has-more). */
+@media (max-height: 820px) and (max-width: 859px), (max-height: 500px) {
+  .voice-text { max-height: 24dvh; overflow-y: auto; overscroll-behavior: contain; }
+  .voice-text.has-more {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+  }
+}
+/* HP miring: layarnya lebar tapi pendek, jadi kartu penelepon di kiri dan pilihan jawaban di kanan. Kalau
+   kartunya tetap lebih tinggi dari layar, kartu itu yang digulir; pertanyaan di atas tetap di tempat. */
+@media (max-height: 500px) and (min-aspect-ratio: 4/3) {
+  .lesson-main.is-text .task-slot:has(> .voice-card) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "head head" "voice options";
+    gap: 0 16px;
+    max-width: 920px;
+  }
+  .task-slot:has(> .voice-card) > .task-head { grid-area: head; }
+  .task-slot:has(> .voice-card) > .options { grid-area: options; }
+  .task-slot > .voice-card { grid-area: voice; align-items: flex-start; min-height: 0; margin: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .voice-caller { width: 76px; }
+  .caller-art { width: 48px; height: 48px; }
+  .voice-bubble { margin-bottom: 0; }
+  .voice-bubble::before { top: 18px; bottom: auto; }
+  .voice-text { max-height: none; }
+}
 
 /* ---------- VO Coach Wall di kartu materi ---------- */
 
