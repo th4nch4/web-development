@@ -90,3 +90,8 @@ halaman soal tidak pernah digulir (HP simulasi dan pertanyaan tetap di tempat, h
 yang boleh digulir), Pengaturan dan dialog keluar bekerja, streak bertambah satu per level selesai,
 level terkunci menjelaskan alasannya, ukuran teks paling besar tetap muat satu layar,
 soal suara tetap bisa dijawab tanpa suara, dan hapus progres benar-benar menghapus.
+
+## Alat bantu pengembangan
+
+Kelompok kami memakai **Claude Code** (asisten coding AI dari Anthropic) sebagai alat bantu saat menulis kode.
+Untuk ide kami berdiskusi bersama untuk membuat pengalaman semenarik mungkin
