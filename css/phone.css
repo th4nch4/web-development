@@ -122,10 +122,45 @@
 }
 
 @media (min-width: 860px) {
-  /* Laptop: HP selebar aslinya (ikut membesar dengan ukuran teks) dan setinggi ruang yang ada, paling tinggi
-     seperti iPhone, bukan diperkecil utuh mengikuti rasio layar iPhone. */
-  #phone-slot .phone { display: flex; flex-direction: column; width: min(calc(360px * var(--text-zoom, 1)), calc(100% - 16px)); height: min(calc(100% - 16px), 764px); }
+  /* Laptop: HP selalu lonjong seperti iPhone (bodi 1 : 2,1). Tingginya setinggi ruang yang ada (paling tinggi
+     setara HP selebar 360px x ukuran teks), lebarnya mengikuti tinggi. Isinya tidak diperkecil: pesan yang
+     panjang digulir di dalam HP. Supaya isinya tidak terlalu sempit, HP paling ramping 260px; kalau ruangnya
+     lebih pendek dari itu, HP diperkecil utuh oleh fitPhone() di js/engine.js, paling kecil 80% (x 1,25)
+     supaya teksnya tetap terbaca. Di ruang yang lebih pendek lagi (mis. lembar hasil terbuka), HP-nya yang
+     lebih pendek. cqh/cqw = ukuran #phone-slot. */
+  #phone-slot { container-type: size; }
+  #phone-slot .phone {
+    --phone-height: max(
+      min(100cqh - 16px, (100cqw - 16px) * 2.1, 360px * var(--text-zoom, 1) * 2.1),
+      min(260px * 2.1, (100cqh - 16px) * 1.25)
+    );
+    container: phone / inline-size;
+    display: flex;
+    flex-direction: column;
+    width: max(260px, var(--phone-height) / 2.1);
+    height: var(--phone-height);
+  }
   #phone-slot .screen { flex: 1 1 0; min-height: 0; aspect-ratio: auto; }
+}
+/* HP ramping (laptop dengan layar pendek): status bar dirapatkan supaya sinyal dan baterai tidak tertutup
+   Dynamic Island, ikon video/telepon disembunyikan supaya nomor pengirim (petunjuk soal) terbaca utuh,
+   dan bar ketik dirapatkan supaya "Ketik pesan" tetap satu baris. */
+@container phone (max-width: 310px) {
+  .status-bar { padding-inline: 24px 18px; }
+  .status-icons { gap: 3px; }
+  .status-icons svg { width: 14px; height: 14px; }
+  .battery { width: 21px; height: 11px; }
+  .island { width: 30%; }
+  .chat-action { display: none; }
+  .chat-input { gap: 8px; padding-inline: 10px; }
+  .chat-field { min-width: 0; overflow: hidden; white-space: nowrap; }
+  /* Teks diperbesar: nama pengirim boleh dua baris daripada terpotong; fotonya mengalah. */
+  .chat-title .tap-sender { line-height: 1.25; white-space: normal; }
+  :root:is([data-text="large"], [data-text="xlarge"]) .chat-header .avatar { display: none; }
+}
+/* Teks diperbesar di HP yang tidak selebar aslinya: ikon video/telepon mengalah untuk nomor pengirim. */
+@container phone (max-width: 400px) {
+  :root:is([data-text="large"], [data-text="xlarge"]) .chat-action { display: none; }
 }
 /* Laptop dengan layar pendek (mis. 1366x768 dengan zoom 125%): jam layar kunci dan status bar dipadatkan
    supaya notifikasinya tetap terlihat utuh. */

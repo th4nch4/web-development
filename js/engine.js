@@ -70,7 +70,8 @@
 
   // Isi HP simulasi tidak diperkecil: kalau pesannya lebih panjang dari ruang HP, isinya digulir di dalam HP
   // (css/phone.css). --phone-h = tinggi alami HP (termasuk isi yang tersembunyi di bawah); di layar HP, ruang HP
-  // setinggi itu (dibatasi CSS). HP hanya diperkecil (transform lewat --fit) kalau lebarnya tidak muat.
+  // setinggi itu (dibatasi CSS). HP hanya diperkecil (transform lewat --fit) kalau lebarnya tidak muat, atau di
+  // laptop pendek kalau HP lonjong paling ramping (css/phone.css) lebih tinggi dari ruangnya.
   // Transform, bukan zoom: Safari tidak mau mengecilkan huruf di bawah batas minimumnya.
   function fitPhone() {
     if (!phone) return;
@@ -80,7 +81,9 @@
     if (Math.abs(height - (Number.parseFloat(slot.style.getPropertyValue("--phone-h")) || 0)) > 1) {
       slot.style.setProperty("--phone-h", `${height}px`);
     }
-    const scale = Math.min(1, slot.clientWidth / (phone.offsetWidth + FRAME_ALLOWANCE));
+    const scale = Math.min(1,
+      slot.clientWidth / (phone.offsetWidth + FRAME_ALLOWANCE),
+      slot.clientHeight / (phone.offsetHeight + FRAME_ALLOWANCE)); // laptop pendek: HP lonjong paling ramping
     phone.style.setProperty("--fit", String(scale));
   }
 
